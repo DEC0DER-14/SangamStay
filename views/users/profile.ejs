@@ -1,0 +1,27 @@
+<% layout('layouts/boilerplate') %>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Profile</h2>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <p class="form-control-plaintext"><%= user.username %></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <p class="form-control-plaintext"><%= user.email %></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <p class="form-control-plaintext"><%= user.phone %></p>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="/profile/edit" class="btn btn-primary">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

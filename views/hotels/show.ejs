@@ -1,0 +1,27 @@
+<% layout('layouts/boilerplate') %>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title"><%= hotel.name %></h5>
+                <p class="card-text"><%= hotel.location %></p>
+                <p class="card-text">
+                    <small class="text-muted">₹<%= hotel.price %> per night</small>
+                </p>
+                <p class="card-text">Available Rooms: <%= hotel.availableRooms %></p>
+                <p class="card-text">
+                    <strong>Amenities:</strong>
+                    <%= hotel.amenities.join(', ') %>
+                </p>
+                <% if(currentUser && (hotel.author.equals(currentUser._id) || currentUser.role === 'admin')) { %>
+                    <div class="card-body">
+                        <a class="card-link btn btn-info" href="/hotels/<%= hotel._id %>/edit">Edit</a>
+                        <form class="d-inline" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
+                            <button class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div> 
