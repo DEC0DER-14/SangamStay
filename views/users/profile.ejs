@@ -1,25 +1,25 @@
 <% layout('layouts/boilerplate') %>
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <div class="card shadow">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
                 <div class="card-body">
-                    <h2 class="card-title text-center mb-4">Profile</h2>
+                    <h2 class="card-title">Profile</h2>
                     <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <p class="form-control-plaintext"><%= user.username %></p>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <p class="form-control-plaintext"><%= user.email %></p>
+                        <strong>Username:</strong> <%= user.username %>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Phone Number</label>
-                        <p class="form-control-plaintext"><%= user.phone %></p>
+                        <strong>Email:</strong> <%= user.email %>
                     </div>
-                    <div class="d-grid gap-2">
-                        <a href="/profile/edit" class="btn btn-primary">Edit Profile</a>
+                    <% if(user.phone) { %>
+                    <div class="mb-3">
+                        <strong>Phone:</strong> <%= user.phone %>
                     </div>
+                    <% } %>
+                    <div class="mb-3">
+                        <strong>Role:</strong> <%= user.role %>
+                    </div>
+                    <a href="/profile/edit" class="btn btn-info">Edit Profile</a>
                 </div>
             </div>
         </div>

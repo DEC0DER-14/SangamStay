@@ -6,11 +6,13 @@ const hotelSchema = new Schema({
     name: String,
     location: String,
     price: Number,
+    description: String,
     amenities: [String],
     availableRooms: Number,
     author: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
     },
     reviews: [
         {

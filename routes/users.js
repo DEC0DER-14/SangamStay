@@ -22,7 +22,7 @@ router.get('/logout', users.logout);
 
 router.get('/profile', isLoggedIn, users.renderProfile);
 router.get('/profile/edit', isLoggedIn, users.renderEditProfile);
-router.post('/profile', isLoggedIn, catchAsync(users.updateProfile));
+router.put('/profile', isLoggedIn, catchAsync(users.updateProfile));
 
 // Add this route for creating an admin (should be protected in production)
 router.post('/create-admin', catchAsync(async (req, res) => {

@@ -1,26 +1,25 @@
 <% layout('layouts/boilerplate') %>
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <div class="card shadow">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
                 <div class="card-body">
-                    <h2 class="card-title text-center mb-4">Edit Profile</h2>
-                    <form action="/profile" method="POST" class="validated-form" novalidate>
+                    <h2 class="card-title">Edit Profile</h2>
+                    <form action="/profile?_method=PUT" method="POST">
                         <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
+                            <label class="form-label" for="username">Username</label>
                             <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label class="form-label" for="email">Email</label>
                             <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" value="<%= user.phone %>" required>
+                            <label class="form-label" for="phone">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="<%= user.phone %>">
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Update Profile</button>
-                        </div>
+                        <button class="btn btn-success">Update Profile</button>
+                        <a href="/profile" class="btn btn-secondary">Cancel</a>
                     </form>
                 </div>
             </div>
