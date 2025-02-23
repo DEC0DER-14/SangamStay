@@ -89,23 +89,12 @@ module.exports.showHotel = async (req, res) => {
             });
 
         if (!hotel) {
-            console.log('Hotel not found:', req.params.id);
             req.flash('error', 'Hotel not found');
             return res.redirect('/hotels');
         }
 
-        // Debug logging
-        console.log('Hotel details:', {
-            id: hotel._id,
-            name: hotel.name,
-            authorId: hotel.author?._id,
-            roomCount: hotel.rooms?.length,
-            reviewCount: hotel.reviews?.length
-        });
-
         res.render('hotels/show', { hotel });
     } catch (e) {
-        console.error('Error in showHotel:', e);
         req.flash('error', 'Error loading hotel details');
         res.redirect('/hotels');
     }
@@ -136,12 +125,17 @@ module.exports.deleteHotel = async (req, res) => {
 };
 
 module.exports.renderBookingForm = async (req, res) => {
-    const hotel = await Hotel.findById(req.params.id);
-    if (!hotel) {
-        req.flash('error', 'Hotel not found');
-        return res.redirect('/hotels');
+    try {
+        const hotel = await Hotel.findById(req.params.id).populate('rooms');
+        if (!hotel) {
+            req.flash('error', 'Hotel not found');
+            return res.redirect('/hotels');
+        }
+        res.render('hotels/book', { hotel });
+    } catch (e) {
+        req.flash('error', 'Error loading hotel details');
+        res.redirect('/hotels');
     }
-    res.render('hotels/book', { hotel });
 };
 
 module.exports.createBooking = async (req, res) => {
@@ -152,6 +146,18 @@ module.exports.createBooking = async (req, res) => {
         const selectedRoom = await Room.findById(roomType);
         const totalAmount = selectedRoom.pricePerNight * numberOfRooms;
 
+        // Check if hotel exists and has availableRooms field
+        if (!hotel || typeof hotel.availableRooms !== 'number') {
+            req.flash('error', 'Invalid hotel data');
+            return res.redirect('/hotels');
+        }
+
+        // Check if enough rooms are available
+        if (hotel.availableRooms < numberOfRooms) {
+            req.flash('error', `Only ${hotel.availableRooms} rooms available`);
+            return res.redirect(`/hotels/${req.params.id}/book`);
+        }
+
         const booking = new Booking({
             userId: req.user._id,
             hotelId: hotel._id,
@@ -159,15 +165,39 @@ module.exports.createBooking = async (req, res) => {
             numberOfRooms,
             numberOfGuests,
             specialRequests,
-            totalAmount
+            totalAmount,
+            status: 'confirmed'
         });
 
-        await booking.save();
-        req.flash('success', 'Booking confirmed successfully!');
-        res.redirect('/bookings');
+        // Update available rooms count
+        hotel.availableRooms = Math.max(0, hotel.availableRooms - numberOfRooms);
+        
+        // Save both the booking and updated hotel
+        await Promise.all([
+            booking.save(),
+            hotel.save()
+        ]);
+
+        req.flash('success', 'Thank you for your booking! Your reservation is confirmed.');
+        res.redirect('/hotels');
     } catch (e) {
         console.error('Booking error:', e);
-        req.flash('error', 'Error creating booking');
-        res.redirect(`/hotels/${req.params.id}`);
+        req.flash('error', 'Sorry, there was a problem with your booking. Please try again.');
+        res.redirect(`/hotels/${req.params.id}/book`);
+    }
+};
+
+module.exports.showBookings = async (req, res) => {
+    try {
+        const bookings = await Booking.find({ userId: req.user._id })
+            .populate('hotelId')
+            .populate('roomId')
+            .exec();
+
+        res.render('bookings/index', { bookings });
+    } catch (e) {
+        console.error('Error fetching bookings:', e);
+        req.flash('error', 'Unable to load bookings');
+        res.redirect('/hotels');
     }
 }; 

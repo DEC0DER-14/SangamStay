@@ -55,7 +55,16 @@ const seedDB = async () => {
         ];
 
         for (const hotelData of hotels) {
-            const hotel = new Hotel(hotelData);
+            const hotel = new Hotel({
+                name: hotelData.name,
+                location: hotelData.location,
+                price: hotelData.price,
+                description: hotelData.description,
+                amenities: hotelData.amenities,
+                availableRooms: hotelData.availableRooms,
+                author: hotelData.author,
+                rooms: []
+            });
             
             // Create rooms for each hotel
             const roomTypes = [
