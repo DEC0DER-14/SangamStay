@@ -1,36 +1,112 @@
 const Hotel = require('../models/hotel');
 const Booking = require('../models/booking');
+const Room = require('../models/room');
 
 module.exports.renderNewForm = (req, res) => {
     res.render('hotels/new');
 };
 
 module.exports.index = async (req, res) => {
-    const hotels = await Hotel.find({});
-    res.render('hotels/index', { hotels });
+    try {
+        const { search } = req.query;
+        let hotels;
+
+        if (search) {
+            // Create a case-insensitive search query for name or location
+            hotels = await Hotel.find({
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { location: { $regex: search, $options: 'i' } }
+                ]
+            });
+        } else {
+            hotels = await Hotel.find({});
+        }
+
+        res.render('hotels/index', { hotels, search });
+    } catch (e) {
+        req.flash('error', 'Error loading hotels');
+        res.redirect('/');
+    }
 };
 
 module.exports.createHotel = async (req, res) => {
-    const hotel = new Hotel(req.body.hotel);
-    hotel.author = req.user._id;
-    await hotel.save();
-    req.flash('success', 'Successfully added a new hotel!');
-    res.redirect(`/hotels/${hotel._id}`);
+    try {
+        const hotel = new Hotel(req.body.hotel);
+        hotel.author = req.user._id;
+        
+        // Create default rooms for the hotel
+        const defaultRooms = [
+            {
+                roomType: 'Standard',
+                capacity: 2,
+                pricePerNight: hotel.price
+            },
+            {
+                roomType: 'Deluxe',
+                capacity: 3,
+                pricePerNight: hotel.price * 1.5
+            }
+        ];
+
+        for (const roomData of defaultRooms) {
+            const room = new Room({
+                hotelId: hotel._id,
+                ...roomData
+            });
+            await room.save();
+            hotel.rooms.push(room._id);
+        }
+
+        await hotel.save();
+        console.log('Created hotel:', hotel);
+        req.flash('success', 'Successfully added a new hotel!');
+        res.redirect(`/hotels/${hotel._id}`);
+    } catch (e) {
+        console.error('Error creating hotel:', e);
+        req.flash('error', 'Error creating hotel');
+        res.redirect('/hotels');
+    }
 };
 
 module.exports.showHotel = async (req, res) => {
     try {
         const hotel = await Hotel.findById(req.params.id)
-            .populate('author')
-            .populate('rooms');
-            
+            .populate({
+                path: 'author',
+                select: 'username email'
+            })
+            .populate({
+                path: 'reviews',
+                populate: {
+                    path: 'author',
+                    select: 'username'
+                }
+            })
+            .populate({
+                path: 'rooms',
+                model: 'Room'
+            });
+
         if (!hotel) {
+            console.log('Hotel not found:', req.params.id);
             req.flash('error', 'Hotel not found');
             return res.redirect('/hotels');
         }
+
+        // Debug logging
+        console.log('Hotel details:', {
+            id: hotel._id,
+            name: hotel.name,
+            authorId: hotel.author?._id,
+            roomCount: hotel.rooms?.length,
+            reviewCount: hotel.reviews?.length
+        });
+
         res.render('hotels/show', { hotel });
     } catch (e) {
-        req.flash('error', 'Something went wrong');
+        console.error('Error in showHotel:', e);
+        req.flash('error', 'Error loading hotel details');
         res.redirect('/hotels');
     }
 };
@@ -69,35 +145,29 @@ module.exports.renderBookingForm = async (req, res) => {
 };
 
 module.exports.createBooking = async (req, res) => {
-    const hotel = await Hotel.findById(req.params.id);
-    if (!hotel) {
-        req.flash('error', 'Hotel not found');
-        return res.redirect('/hotels');
+    try {
+        const hotel = await Hotel.findById(req.params.id).populate('rooms');
+        const { roomType, numberOfRooms, numberOfGuests, specialRequests } = req.body;
+        
+        const selectedRoom = await Room.findById(roomType);
+        const totalAmount = selectedRoom.pricePerNight * numberOfRooms;
+
+        const booking = new Booking({
+            userId: req.user._id,
+            hotelId: hotel._id,
+            roomId: roomType,
+            numberOfRooms,
+            numberOfGuests,
+            specialRequests,
+            totalAmount
+        });
+
+        await booking.save();
+        req.flash('success', 'Booking confirmed successfully!');
+        res.redirect('/bookings');
+    } catch (e) {
+        console.error('Booking error:', e);
+        req.flash('error', 'Error creating booking');
+        res.redirect(`/hotels/${req.params.id}`);
     }
-
-    if (hotel.availableRooms < 1) {
-        req.flash('error', 'No rooms available');
-        return res.redirect(`/hotels/${hotel._id}`);
-    }
-
-    const { checkInDate, checkOutDate } = req.body;
-    const days = (new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24);
-    const totalAmount = hotel.price * days;
-
-    const booking = new Booking({
-        userId: req.user._id,
-        hotelId: hotel._id,
-        checkInDate,
-        checkOutDate,
-        totalAmount
-    });
-
-    await booking.save();
-    
-    // Update available rooms
-    hotel.availableRooms -= 1;
-    await hotel.save();
-
-    req.flash('success', 'Booking successful!');
-    res.redirect(`/hotels/${hotel._id}`);
 }; 

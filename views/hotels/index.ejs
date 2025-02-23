@@ -1,11 +1,32 @@
 <% layout('layouts/boilerplate') %>
 <h1>All Hotels</h1>
+
+<!-- Add search bar -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form class="d-flex" action="/hotels" method="GET">
+            <input class="form-control me-2" type="search" placeholder="Search hotels by name or location" 
+                   name="search" value="<%= typeof search !== 'undefined' ? search : '' %>">
+            <button class="btn btn-outline-primary" type="submit">Search</button>
+            <% if(typeof search !== 'undefined' && search) { %>
+                <a href="/hotels" class="btn btn-outline-secondary ms-2">Clear</a>
+            <% } %>
+        </form>
+    </div>
+</div>
+
 <% if(currentUser && currentUser.role === 'admin') { %>
 <div>
     <a href="/hotels/new" class="btn btn-primary mb-3">Add New Hotel</a>
 </div>
 <% } %>
+
 <div class="row">
+    <% if(hotels.length === 0) { %>
+        <div class="col-12">
+            <p class="text-muted">No hotels found matching your search.</p>
+        </div>
+    <% } %>
     <% for(let hotel of hotels) { %>
         <div class="col-md-4 mb-3">
             <div class="card">

@@ -34,4 +34,17 @@ router.get('/:id/book', catchAsync(async (req, res) => {
 }));
 router.post('/:id/book', isLoggedIn, catchAsync(hotelsController.createBooking));
 
+// Add this route temporarily for debugging
+router.get('/debug/:id', async (req, res) => {
+    try {
+        const hotel = await Hotel.findById(req.params.id)
+            .populate('author')
+            .populate('rooms')
+            .populate('reviews');
+        res.json(hotel);
+    } catch (e) {
+        res.json({ error: e.message });
+    }
+});
+
 module.exports = router; 

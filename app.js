@@ -21,6 +21,7 @@ const cookieParser = require('cookie-parser');
 const apiRoutes = require('./routes/api');
 const open = require('open').default;
 const helmet = require('helmet');
+const Room = require('./models/room');
 
 // Connect to MongoDB using environment variable
 mongoose.connect(process.env.MONGODB_URI)

@@ -9,24 +9,65 @@
                     <small class="text-muted">₹<%= hotel.price %> per night</small>
                 </p>
                 <p class="card-text">Available Rooms: <%= hotel.availableRooms %></p>
-                <p class="card-text">
-                    <strong>Amenities:</strong>
-                    <%= hotel.amenities.join(', ') %>
-                </p>
-                <% if(currentUser && (currentUser.role === 'admin' || (hotel.author && hotel.author.equals(currentUser._id)))) { %>
-                    <div class="card-body">
-                        <a class="card-link btn btn-info" href="/hotels/<%= hotel._id %>/edit">Edit</a>
-                        <form class="d-inline" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
-                            <button class="btn btn-danger">Delete</button>
-                        </form>
+                <% if(hotel.description) { %>
+                    <p class="card-text"><%= hotel.description %></p>
+                <% } %>
+                <% if(hotel.amenities && hotel.amenities.length > 0) { %>
+                    <p class="card-text">
+                        <strong>Amenities:</strong>
+                        <%= hotel.amenities.join(', ') %>
+                    </p>
+                <% } %>
+
+                <!-- Room Types Section -->
+                <% if(hotel.rooms && hotel.rooms.length > 0) { %>
+                    <div class="mb-4">
+                        <h6 class="card-subtitle mb-2">Available Room Types:</h6>
+                        <% hotel.rooms.forEach(room => { %>
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <h6><%= room.roomType %></h6>
+                                    <p class="mb-1">Capacity: <%= room.capacity %> persons</p>
+                                    <p class="mb-0">Price: ₹<%= room.pricePerNight %> per night</p>
+                                </div>
+                            </div>
+                        <% }) %>
                     </div>
                 <% } %>
-                <% if (currentUser) { %>
+
+                <% if(currentUser) { %>
+                    <% if(currentUser.role === 'admin' || (hotel.author && hotel.author._id && hotel.author._id.equals(currentUser._id))) { %>
+                        <div class="card-body">
+                            <a class="card-link btn btn-info" href="/hotels/<%= hotel._id %>/edit">Edit</a>
+                            <form class="d-inline" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
+                                <button class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    <% } %>
                     <a href="/hotels/<%= hotel._id %>/book" class="btn btn-primary">Book Now</a>
                 <% } else { %>
                     <a href="/login" class="btn btn-primary">Login to Book</a>
                 <% } %>
             </div>
         </div>
+
+        <!-- Reviews Section -->
+        <% if(hotel.reviews && hotel.reviews.length > 0) { %>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h4>Reviews</h4>
+                    <% for(let review of hotel.reviews) { %>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    By <%= review.author ? review.author.username : 'Anonymous' %>
+                                </h6>
+                                <p class="card-text"><%= review.body %></p>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
     </div>
 </div> 

@@ -19,6 +19,12 @@ const hotelSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'Review'
         }
+    ],
+    rooms: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Room'
+        }
     ]
 });
 
