@@ -1,36 +1,95 @@
 <% layout('layouts/boilerplate') %>
 <div class="container mt-5">
-    <h1>My Bookings</h1>
-    <div class="row">
-        <% if(bookings.length === 0) { %>
-            <div class="col-12">
-                <p class="text-muted">No bookings found.</p>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Bookings</h1>
+        <% if(currentUser && currentUser.role === 'admin') { %>
+            <form action="/bookings/clear?_method=DELETE" method="POST" 
+                  onsubmit="return confirm('Are you sure you want to clear ALL bookings? This cannot be undone.')">
+                <button class="btn btn-danger">Clear All Bookings (Admin)</button>
+            </form>
         <% } %>
-        <% bookings.forEach(booking => { %>
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"><%= booking.hotelId.name %></h5>
-                        <p class="card-text">
-                            <strong>Room Type:</strong> <%= booking.roomId.roomType %><br>
-                            <strong>Number of Rooms:</strong> <%= booking.numberOfRooms %><br>
-                            <strong>Number of Guests:</strong> <%= booking.numberOfGuests %><br>
-                            <strong>Total Amount:</strong> ₹<%= booking.totalAmount %><br>
-                            <strong>Status:</strong> <span class="badge bg-<%= booking.status === 'confirmed' ? 'success' : 'warning' %>">
-                                <%= booking.status %>
-                            </span><br>
-                            <strong>Booked On:</strong> <%= booking.createdAt.toLocaleDateString() %>
-                        </p>
-                        <% if(booking.specialRequests) { %>
+    </div>
+    
+    <% if(bookings.length === 0) { %>
+        <div class="alert alert-info">
+            You haven't made any bookings yet. 
+            <a href="/hotels" class="alert-link">Browse hotels</a> to make your first booking!
+        </div>
+    <% } else { %>
+        <div class="row">
+            <% bookings.forEach(booking => { %>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <%= booking.hotelId ? booking.hotelId.name : 'Hotel no longer available' %>
+                            </h5>
                             <p class="card-text">
-                                <strong>Special Requests:</strong><br>
-                                <%= booking.specialRequests %>
+                                <strong>Room Type:</strong> 
+                                <%= booking.roomId ? booking.roomId.roomType : 'Room type not available' %><br>
+                                <strong>Number of Rooms:</strong> <%= booking.numberOfRooms %><br>
+                                <strong>Number of Guests:</strong> <%= booking.numberOfGuests %><br>
+                                <strong>Total Amount:</strong> ₹<%= booking.totalAmount %><br>
+                                <strong>Status:</strong> 
+                                <span class="badge bg-<%= booking.status === 'confirmed' ? 'success' : 
+                                    (booking.status === 'pending' ? 'warning' : 'danger') %>">
+                                    <%= booking.status.toUpperCase() %>
+                                </span>
                             </p>
-                        <% } %>
+                            <% if(booking.specialRequests) { %>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <strong>Special Requests:</strong><br>
+                                        <%= booking.specialRequests %>
+                                    </small>
+                                </p>
+                            <% } %>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Booked on: <%= booking.createdAt.toLocaleDateString() %>
+                                </small>
+                            </p>
+                            <div class="d-flex gap-2">
+                                <% if(booking.hotelId) { %>
+                                    <a href="/hotels/<%= booking.hotelId._id %>" class="btn btn-primary btn-sm">
+                                        View Hotel
+                                    </a>
+                                <% } %>
+                                <% if(booking.status !== 'cancelled') { %>
+                                    <button type="button" class="btn btn-danger btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#cancelModal<%= booking._id %>">
+                                        Cancel Booking
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        <% }) %>
-    </div>
+
+                <!-- Cancel Confirmation Modal for each booking -->
+                <div class="modal fade" id="cancelModal<%= booking._id %>" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Cancel Booking</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to cancel this booking?</p>
+                                <p><strong>Hotel:</strong> <%= booking.hotelId ? booking.hotelId.name : 'Hotel no longer available' %></p>
+                                <p><strong>Room Type:</strong> <%= booking.roomId ? booking.roomId.roomType : 'Room type not available' %></p>
+                                <p><strong>Total Amount:</strong> ₹<%= booking.totalAmount %></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <form action="/bookings/<%= booking._id %>/cancel" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
 </div> 

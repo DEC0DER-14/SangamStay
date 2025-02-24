@@ -23,6 +23,7 @@ const open = require('open').default;
 const helmet = require('helmet');
 const Room = require('./models/room');
 const adminRoutes = require('./routes/admin');
+const bookingRoutes = require('./routes/bookings');
 
 // Connect to MongoDB using environment variable
 mongoose.connect(process.env.MONGODB_URI)
@@ -101,6 +102,7 @@ app.use('/hotels/:id/reviews', reviewRoutes);
 app.use('/', userRoutes);
 app.use('/api', apiRoutes);
 app.use('/admin', adminRoutes);
+app.use('/bookings', bookingRoutes);
 
 app.get("/", (req, res) => {
     res.render("home");
