@@ -22,14 +22,22 @@ const seedDB = async () => {
         await Hotel.deleteMany({});
         await Room.deleteMany({});
 
+        // Check for existing admin users
+        const existingAdmins = await User.find({ role: 'admin' });
+        console.log('Existing admin users:', existingAdmins);
+
         // Create an admin user if it doesn't exist
         let adminUser = await User.findOne({ role: 'admin' });
         if (!adminUser) {
+            console.log('No admin user found, creating new one...');
             adminUser = await User.register(new User({
-                username: 'admin',
-                email: 'admin@example.com',
+                username: 'arnav',
+                email: 'arnavchess14@gmail.com',
                 role: 'admin'
-            }), 'adminpassword');
+            }), 'arnav@1411');
+            console.log('Admin user created:', adminUser);
+        } else {
+            console.log('Admin user already exists:', adminUser);
         }
 
         const hotels = [

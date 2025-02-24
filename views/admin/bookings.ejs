@@ -1,0 +1,51 @@
+<% layout('layouts/boilerplate') %>
+<div class="container mt-5">
+    <h1>All Bookings</h1>
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>User</th>
+                            <th>Hotel</th>
+                            <th>Room Type</th>
+                            <th>Rooms</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% bookings.forEach(booking => { %>
+                            <tr>
+                                <td><%= booking._id %></td>
+                                <td><%= booking.userId.username %></td>
+                                <td><%= booking.hotelId.name %></td>
+                                <td><%= booking.roomId.roomType %></td>
+                                <td><%= booking.numberOfRooms %></td>
+                                <td>₹<%= booking.totalAmount %></td>
+                                <td>
+                                    <span class="badge bg-<%= booking.status === 'confirmed' ? 'success' : 'warning' %>">
+                                        <%= booking.status %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <form action="/admin/bookings/<%= booking._id %>/status" method="POST" class="d-inline">
+                                        <select name="status" class="form-select form-select-sm d-inline" style="width: auto">
+                                            <option value="pending" <%= booking.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                            <option value="confirmed" <%= booking.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                                            <option value="cancelled" <%= booking.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-success">Update</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> 

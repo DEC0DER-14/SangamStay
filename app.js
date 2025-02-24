@@ -22,6 +22,7 @@ const apiRoutes = require('./routes/api');
 const open = require('open').default;
 const helmet = require('helmet');
 const Room = require('./models/room');
+const adminRoutes = require('./routes/admin');
 
 // Connect to MongoDB using environment variable
 mongoose.connect(process.env.MONGODB_URI)
@@ -99,6 +100,7 @@ app.use('/hotels', hotelRoutes);
 app.use('/hotels/:id/reviews', reviewRoutes);
 app.use('/', userRoutes);
 app.use('/api', apiRoutes);
+app.use('/admin', adminRoutes);
 
 app.get("/", (req, res) => {
     res.render("home");

@@ -1,0 +1,63 @@
+<% layout('layouts/boilerplate') %>
+<div class="container mt-5">
+    <h1>Edit Hotel</h1>
+    <form action="/hotels/<%= hotel._id %>?_method=PUT" method="POST" class="validated-form" novalidate>
+        <div class="mb-3">
+            <label class="form-label" for="name">Hotel Name</label>
+            <input class="form-control" type="text" id="name" name="hotel[name]" 
+                   value="<%= hotel.name %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="location">Location</label>
+            <input class="form-control" type="text" id="location" name="hotel[location]" 
+                   value="<%= hotel.location %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="price">Price per night</label>
+            <input class="form-control" type="number" id="price" name="hotel[price]" 
+                   value="<%= hotel.price %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="description">Description</label>
+            <textarea class="form-control" type="text" id="description" name="hotel[description]" 
+                      required><%= hotel.description %></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Amenities</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="hotel[amenities][]" 
+                       value="WiFi" id="wifi" <%= hotel.amenities.includes('WiFi') ? 'checked' : '' %>>
+                <label class="form-check-label" for="wifi">WiFi</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="hotel[amenities][]" 
+                       value="Pool" id="pool" <%= hotel.amenities.includes('Pool') ? 'checked' : '' %>>
+                <label class="form-check-label" for="pool">Pool</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="hotel[amenities][]" 
+                       value="Spa" id="spa" <%= hotel.amenities.includes('Spa') ? 'checked' : '' %>>
+                <label class="form-check-label" for="spa">Spa</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="hotel[amenities][]" 
+                       value="Restaurant" id="restaurant" <%= hotel.amenities.includes('Restaurant') ? 'checked' : '' %>>
+                <label class="form-check-label" for="restaurant">Restaurant</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="hotel[amenities][]" 
+                       value="Parking" id="parking" <%= hotel.amenities.includes('Parking') ? 'checked' : '' %>>
+                <label class="form-check-label" for="parking">Parking</label>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="availableRooms">Available Rooms</label>
+            <input class="form-control" type="number" id="availableRooms" 
+                   name="hotel[availableRooms]" value="<%= hotel.availableRooms %>" required>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success">Update Hotel</button>
+            <a href="/hotels/<%= hotel._id %>" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div> 

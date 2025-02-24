@@ -55,4 +55,12 @@ h1 {
 .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.container.mt-5 {
+    background-image: url('/path/to/your/image.jpg');
+    background-size: cover;
+    background-position: center;
+    padding: 20px;
+    border-radius: 10px;
 } 

@@ -1,36 +1,52 @@
 <% layout('layouts/boilerplate') %>
-<div class="row">
-    <h1 class="text-center">New Hotel</h1>
-    <div class="col-md-6 offset-md-3">
-        <form action="/hotels" method="POST" novalidate class="validated-form">
+<div class="container mt-5">
+    <div class="card p-4" style="background-color: rgba(255, 255, 255, 0.8);">
+        <h1 class="text-dark mb-4">Add New Hotel</h1>
+        <form action="/hotels" method="POST" class="validated-form" novalidate>
             <div class="mb-3">
-                <label class="form-label" for="name">Hotel Name</label>
+                <label class="form-label text-dark" for="name">Hotel Name</label>
                 <input class="form-control" type="text" id="name" name="hotel[name]" required>
             </div>
             <div class="mb-3">
-                <label class="form-label" for="location">Location</label>
+                <label class="form-label text-dark" for="location">Location</label>
                 <input class="form-control" type="text" id="location" name="hotel[location]" required>
             </div>
             <div class="mb-3">
-                <label class="form-label" for="price">Price Per Night</label>
-                <div class="input-group">
-                    <span class="input-group-text">₹</span>
-                    <input type="text" class="form-control" id="price" name="hotel[price]" required>
+                <label class="form-label text-dark" for="price">Price per night</label>
+                <input class="form-control" type="number" id="price" name="hotel[price]" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label text-dark" for="description">Description</label>
+                <textarea class="form-control" type="text" id="description" name="hotel[description]" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label text-dark">Amenities</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="WiFi" id="wifi">
+                    <label class="form-check-label text-dark" for="wifi">WiFi</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Pool" id="pool">
+                    <label class="form-check-label text-dark" for="pool">Pool</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Spa" id="spa">
+                    <label class="form-check-label text-dark" for="spa">Spa</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Restaurant" id="restaurant">
+                    <label class="form-check-label text-dark" for="restaurant">Restaurant</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Parking" id="parking">
+                    <label class="form-check-label text-dark" for="parking">Parking</label>
                 </div>
             </div>
             <div class="mb-3">
-                <label class="form-label" for="availableRooms">Available Rooms</label>
+                <label class="form-label text-dark" for="availableRooms">Available Rooms</label>
                 <input class="form-control" type="number" id="availableRooms" name="hotel[availableRooms]" required>
             </div>
-            <div class="mb-3">
-                <label class="form-label" for="amenities">Amenities</label>
-                <input class="form-control" type="text" id="amenities" name="hotel[amenities]" 
-                       placeholder="Separate amenities with commas" required>
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-success">Add Hotel</button>
-            </div>
+            <button class="btn btn-success">Add Hotel</button>
         </form>
-        <a href="/hotels">Back to Hotels</a>
     </div>
 </div> 

@@ -5,9 +5,9 @@ module.exports.hotelSchema = Joi.object({
         name: Joi.string().required(),
         location: Joi.string().required(),
         price: Joi.number().required().min(0),
-        amenities: Joi.array().items(Joi.string()),
-        availableRooms: Joi.number().required().min(0),
-        description: Joi.string().required()
+        description: Joi.string().required(),
+        amenities: Joi.array().items(Joi.string()).default([]),
+        availableRooms: Joi.number().required().min(0)
     }).required()
 });
 

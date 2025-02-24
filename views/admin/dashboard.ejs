@@ -1,0 +1,56 @@
+<% layout('layouts/boilerplate') %>
+<div class="container mt-5">
+    <h1>Admin Dashboard</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Quick Actions</h3>
+                    <a href="/hotels/new" class="btn btn-primary me-2">Add New Hotel</a>
+                    <a href="/admin/bookings" class="btn btn-info me-2">View All Bookings</a>
+                    <a href="/admin/users" class="btn btn-secondary">Manage Users</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Manage Hotels</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Hotel Name</th>
+                            <th>Location</th>
+                            <th>Available Rooms</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% hotels.forEach(hotel => { %>
+                            <tr>
+                                <td><%= hotel.name %></td>
+                                <td><%= hotel.location %></td>
+                                <td>
+                                    <form class="d-inline" action="/admin/hotels/<%= hotel._id %>/rooms" method="POST">
+                                        <input type="number" name="availableRooms" value="<%= hotel.availableRooms %>" 
+                                               class="form-control form-control-sm d-inline" style="width: 80px">
+                                        <button type="submit" class="btn btn-sm btn-success">Update</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <a href="/hotels/<%= hotel._id %>/edit" class="btn btn-sm btn-warning">Edit</a>
+                                    <form class="d-inline" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> 

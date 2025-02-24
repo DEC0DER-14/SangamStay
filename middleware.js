@@ -18,9 +18,19 @@ module.exports.isLoggedIn = (req, res, next) => {
 module.exports.validateHotel = (req, res, next) => {
     const { error } = hotelSchema.validate(req.body);
     if (error) {
-        throw new ExpressError(error.message, 400);
+        // If no amenities are selected, set it as an empty array
+        if (!req.body.hotel.amenities) {
+            req.body.hotel.amenities = [];
+        }
+        // If amenities is sent as a single value, convert it to an array
+        else if (!Array.isArray(req.body.hotel.amenities)) {
+            req.body.hotel.amenities = [req.body.hotel.amenities];
+        }
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(msg, 400);
+    } else {
+        next();
     }
-    next();
 };
 
 module.exports.isAuthor = async (req, res, next) => {
