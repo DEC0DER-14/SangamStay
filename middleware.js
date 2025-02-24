@@ -84,4 +84,16 @@ const limiter = rateLimit({
     max: 100 // limit each IP to 100 requests per windowMs
 });
 
-module.exports.apiLimiter = limiter; 
+module.exports.apiLimiter = limiter;
+
+module.exports.deleteHotel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Hotel.findByIdAndDelete(id);
+        req.flash('success', 'Successfully deleted hotel');
+        res.redirect('/hotels');
+    } catch (e) {
+        req.flash('error', 'Error deleting hotel');
+        res.redirect(`/hotels/${req.params.id}`);
+    }
+}; 

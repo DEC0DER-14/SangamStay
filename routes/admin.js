@@ -8,8 +8,24 @@ const catchAsync = require('../utils/catchAsync');
 
 // Admin dashboard
 router.get('/dashboard', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
-    const hotels = await Hotel.find({});
-    res.render('admin/dashboard', { hotels });
+    try {
+        const hotels = await Hotel.find({});
+        const bookings = await Booking.find({})
+            .populate('userId')
+            .populate('hotelId')
+            .limit(5)
+            .sort({ createdAt: -1 });
+        
+        res.render('admin/dashboard', { 
+            hotels,
+            bookings,
+            totalHotels: hotels.length,
+            totalBookings: await Booking.countDocuments()
+        });
+    } catch (e) {
+        req.flash('error', 'Error loading dashboard');
+        res.redirect('/hotels');
+    }
 }));
 
 // Update hotel room availability

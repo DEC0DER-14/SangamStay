@@ -16,7 +16,16 @@ router.route('/login')
         failureFlash: true, 
         failureRedirect: '/login',
         keepSessionInfo: true 
-    }), users.login);
+    }), (req, res) => {
+        req.flash('success', 'Welcome back!');
+        if (req.user.role === 'admin') {
+            res.redirect('/admin/dashboard');
+        } else {
+            const redirectUrl = req.session.returnTo || '/hotels';
+            delete req.session.returnTo;
+            res.redirect(redirectUrl);
+        }
+    });
 
 router.get('/logout', users.logout);
 

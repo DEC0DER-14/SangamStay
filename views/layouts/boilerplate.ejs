@@ -45,5 +45,36 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the modal and its buttons
+            const deleteModal = document.getElementById('deleteConfirmationModal');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            let formToSubmit = null;
+
+            // When delete button is clicked, store the form
+            document.querySelectorAll('.delete-hotel-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    formToSubmit = this.closest('form');
+                });
+            });
+
+            // When confirm button in modal is clicked, submit the stored form
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', function() {
+                    if (formToSubmit) {
+                        formToSubmit.submit();
+                    }
+                });
+            }
+
+            // Clear the stored form when modal is closed
+            if (deleteModal) {
+                deleteModal.addEventListener('hidden.bs.modal', function() {
+                    formToSubmit = null;
+                });
+            }
+        });
+    </script>
 </body>
 </html> 

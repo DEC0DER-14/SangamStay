@@ -16,69 +16,82 @@ mongoose.connect(process.env.MONGODB_URI)
         console.log(err);
     });
 
+const sampleHotels = [
+    {
+        name: "The Taj Palace",
+        location: "Mumbai, Maharashtra",
+        price: 15000,
+        description: "Experience luxury at its finest in the heart of Mumbai. The Taj Palace offers spectacular sea views, world-class amenities, and the legendary Taj hospitality.",
+        amenities: ["Swimming Pool", "Spa", "24/7 Room Service", "Restaurant", "Free Wi-Fi", "Beach Access", "Fitness Center"],
+        availableRooms: 50
+    },
+    {
+        name: "The Oberoi Udaivilas",
+        location: "Udaipur, Rajasthan",
+        price: 35000,
+        description: "Set on the banks of Lake Pichola, this luxury palace hotel offers stunning views of the City Palace and the Aravalli Hills. Experience royal Rajasthani hospitality.",
+        amenities: ["Private Pool", "Spa", "Lake View", "Fine Dining", "Butler Service", "Heritage Tours", "Yoga Classes"],
+        availableRooms: 30
+    },
+    {
+        name: "Wildflower Hall",
+        location: "Shimla, Himachal Pradesh",
+        price: 25000,
+        description: "A luxury mountain resort set in 23 acres of virgin woods, offering spectacular views of the Himalayas. Perfect for nature lovers and adventure enthusiasts.",
+        amenities: ["Mountain Views", "Spa", "Indoor Pool", "Adventure Sports", "Restaurant", "Bar", "Hiking Trails"],
+        availableRooms: 25
+    },
+    {
+        name: "Coconut Lagoon",
+        location: "Kumarakom, Kerala",
+        price: 18000,
+        description: "Traditional Kerala architecture meets modern luxury in this backwater resort. Experience the tranquility of Kerala's famous backwaters and Ayurvedic treatments.",
+        amenities: ["Backwater Views", "Ayurveda Center", "Pool", "Houseboat Tours", "Cultural Shows", "Organic Farm", "Yoga"],
+        availableRooms: 40
+    },
+    {
+        name: "The Leela Palace",
+        location: "Bengaluru, Karnataka",
+        price: 22000,
+        description: "A modern palace hotel combining old-world elegance with contemporary luxury. Located in the heart of Bangalore's business district.",
+        amenities: ["Rooftop Pool", "Spa", "Multiple Restaurants", "Business Center", "Art Gallery", "Garden", "Fitness Center"],
+        availableRooms: 35
+    }
+];
+
 const seedDB = async () => {
     try {
-        // Clear existing data
+        // Delete existing data
         await Hotel.deleteMany({});
         await Room.deleteMany({});
-
-        // Check for existing admin users
-        const existingAdmins = await User.find({ role: 'admin' });
-        console.log('Existing admin users:', existingAdmins);
 
         // Create an admin user if it doesn't exist
         let adminUser = await User.findOne({ role: 'admin' });
         if (!adminUser) {
-            console.log('No admin user found, creating new one...');
             adminUser = await User.register(new User({
-                username: 'arnav',
-                email: 'arnavchess14@gmail.com',
+                username: 'admin',
+                email: 'admin@example.com',
                 role: 'admin'
-            }), 'arnav@1411');
-            console.log('Admin user created:', adminUser);
-        } else {
-            console.log('Admin user already exists:', adminUser);
+            }), 'adminpassword');
         }
 
-        const hotels = [
-            {
-                name: 'Luxury Palace Hotel',
-                location: 'Mumbai',
-                price: 5000,
-                description: 'A luxurious 5-star hotel in the heart of Mumbai',
-                amenities: ['WiFi', 'Pool', 'Spa', 'Restaurant'],
-                availableRooms: 10,
-                author: adminUser._id
-            },
-            {
-                name: 'Green Valley Resort',
-                location: 'Pune',
-                price: 3500,
-                description: 'Peaceful resort surrounded by nature',
-                amenities: ['WiFi', 'Garden', 'Restaurant'],
-                availableRooms: 15,
-                author: adminUser._id
-            }
-            // Add more hotels as needed
-        ];
-
-        for (const hotelData of hotels) {
+        // Add hotels with rooms
+        for (let hotelData of sampleHotels) {
             const hotel = new Hotel({
-                name: hotelData.name,
-                location: hotelData.location,
-                price: hotelData.price,
-                description: hotelData.description,
-                amenities: hotelData.amenities,
-                availableRooms: hotelData.availableRooms,
-                author: hotelData.author,
-                rooms: []
+                ...hotelData,
+                author: adminUser._id
             });
-            
-            // Create rooms for each hotel
+
+            // Create room types for each hotel
             const roomTypes = [
                 {
                     roomType: 'Deluxe',
                     capacity: 2,
+                    pricePerNight: hotelData.price * 0.8
+                },
+                {
+                    roomType: 'Super Deluxe',
+                    capacity: 3,
                     pricePerNight: hotelData.price
                 },
                 {
@@ -88,7 +101,7 @@ const seedDB = async () => {
                 }
             ];
 
-            for (const roomType of roomTypes) {
+            for (let roomType of roomTypes) {
                 const room = new Room({
                     hotelId: hotel._id,
                     ...roomType

@@ -44,18 +44,13 @@ module.exports.renderLogin = (req, res) => {
 }
 
 module.exports.login = (req, res) => {
-    // Generate JWT token
-    const token = generateToken(req.user);
-    res.cookie('jwt', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-
-    req.flash('success', 'Welcome back!');
-    const redirectUrl = req.session.returnTo || '/hotels';
-    delete req.session.returnTo;
-    res.redirect(redirectUrl);
+    if (req.user.role === 'admin') {
+        res.redirect('/admin/dashboard');
+    } else {
+        const redirectUrl = req.session.returnTo || '/hotels';
+        delete req.session.returnTo;
+        res.redirect(redirectUrl);
+    }
 }
 
 module.exports.logout = (req, res, next) => {
