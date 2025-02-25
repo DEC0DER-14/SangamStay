@@ -61,7 +61,7 @@ module.exports.logout = (req, res, next) => {
         // Clear JWT cookie
         res.clearCookie('jwt');
         req.flash('success', "Goodbye!");
-        res.redirect('/hotels');
+        res.redirect('/');
     });
 }
 

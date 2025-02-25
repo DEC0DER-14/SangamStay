@@ -12,8 +12,14 @@
                 <input class="form-control" type="text" id="location" name="hotel[location]" required>
             </div>
             <div class="mb-3">
-                <label class="form-label text-dark" for="price">Price per night</label>
-                <input class="form-control" type="number" id="price" name="hotel[price]" required>
+                <label class="form-label" for="price">Price per night</label>
+                <input class="form-control <%= locals.error && locals.error.includes('Price cannot be negative') ? 'is-invalid' : '' %>" 
+                       type="number" id="price" name="hotel[price]" min="0" required>
+                <% if (locals.error && locals.error.includes('Price cannot be negative')) { %>
+                    <div class="invalid-feedback">
+                        Price cannot be negative
+                    </div>
+                <% } %>
             </div>
             <div class="mb-3">
                 <label class="form-label text-dark" for="description">Description</label>
