@@ -141,29 +141,51 @@ module.exports.renderBookingForm = async (req, res) => {
 module.exports.createBooking = async (req, res) => {
     try {
         const hotel = await Hotel.findById(req.params.id).populate('rooms');
-        const { roomType, numberOfRooms, numberOfGuests, specialRequests } = req.body;
-        
-        const selectedRoom = await Room.findById(roomType);
-        const totalAmount = selectedRoom.pricePerNight * numberOfRooms;
+        const { 
+            roomType, 
+            numberOfRooms, 
+            numberOfGuests, 
+            specialRequests,
+            checkInDate,
+            checkOutDate,
+            checkInTime,
+            checkOutTime,
+            guestDetails
+        } = req.body;
 
-        // Check if hotel exists and has availableRooms field
-        if (!hotel || typeof hotel.availableRooms !== 'number') {
-            req.flash('error', 'Invalid hotel data');
-            return res.redirect('/hotels');
-        }
-
-        // Check if enough rooms are available
-        if (hotel.availableRooms < numberOfRooms) {
-            req.flash('error', `Only ${hotel.availableRooms} rooms available`);
+        // Validate required fields
+        if (!checkInDate || !checkOutDate || !checkInTime || !checkOutTime) {
+            req.flash('error', 'Please fill in all required fields');
             return res.redirect(`/hotels/${req.params.id}/book`);
         }
+        
+        const selectedRoom = await Room.findById(roomType);
+        if (!selectedRoom) {
+            req.flash('error', 'Invalid room type selected');
+            return res.redirect(`/hotels/${req.params.id}/book`);
+        }
+        
+        // Calculate number of nights
+        const checkIn = new Date(checkInDate);
+        const checkOut = new Date(checkOutDate);
+        const numberOfNights = Math.max(1, Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
+        
+        // Calculate total amount
+        const totalAmount = selectedRoom.pricePerNight * numberOfRooms * numberOfNights;
 
+        // Create new booking
         const booking = new Booking({
             userId: req.user._id,
             hotelId: hotel._id,
             roomId: roomType,
+            checkInDate,
+            checkOutDate,
+            checkInTime,
+            checkOutTime,
+            numberOfNights,
             numberOfRooms,
             numberOfGuests,
+            guestDetails,
             specialRequests,
             totalAmount,
             status: 'confirmed'
@@ -179,7 +201,7 @@ module.exports.createBooking = async (req, res) => {
         ]);
 
         req.flash('success', 'Thank you for your booking! Your reservation is confirmed.');
-        res.redirect('/hotels');
+        res.redirect('/bookings');
     } catch (e) {
         console.error('Booking error:', e);
         req.flash('error', 'Sorry, there was a problem with your booking. Please try again.');

@@ -2,6 +2,7 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>My Bookings</h1>
+        <a href="/hotels" class="btn btn-primary">Book Another Stay</a>
         <% if(currentUser && currentUser.role === 'admin') { %>
             <form action="/bookings/clear?_method=DELETE" method="POST" 
                   onsubmit="return confirm('Are you sure you want to clear ALL bookings? This cannot be undone.')">
@@ -27,6 +28,11 @@
                             <p class="card-text">
                                 <strong>Room Type:</strong> 
                                 <%= booking.roomId ? booking.roomId.roomType : 'Room type not available' %><br>
+                                <% if(booking.checkInDate) { %>
+                                    <strong>Check-in:</strong> <%= booking.checkInDate.toLocaleDateString() %> at <%= booking.checkInTime %><br>
+                                    <strong>Check-out:</strong> <%= booking.checkOutDate.toLocaleDateString() %> at <%= booking.checkOutTime %><br>
+                                    <strong>Number of Nights:</strong> <%= booking.numberOfNights %><br>
+                                <% } %>
                                 <strong>Number of Rooms:</strong> <%= booking.numberOfRooms %><br>
                                 <strong>Number of Guests:</strong> <%= booking.numberOfGuests %><br>
                                 <strong>Total Amount:</strong> ₹<%= booking.totalAmount %><br>
@@ -51,9 +57,10 @@
                             </p>
                             <div class="d-flex gap-2">
                                 <% if(booking.hotelId) { %>
-                                    <a href="/hotels/<%= booking.hotelId._id %>" class="btn btn-primary btn-sm">
-                                        View Hotel
-                                    </a>
+                                    <button type="button" class="btn btn-primary btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#detailsModal<%= booking._id %>">
+                                        View Details
+                                    </button>
                                 <% } %>
                                 <% if(booking.status !== 'cancelled') { %>
                                     <button type="button" class="btn btn-danger btn-sm" 
@@ -61,6 +68,75 @@
                                         Cancel Booking
                                     </button>
                                 <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details Modal -->
+                <div class="modal fade" id="detailsModal<%= booking._id %>" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Booking Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Hotel Information</h6>
+                                        <p>
+                                            <strong>Hotel:</strong> <%= booking.hotelId ? booking.hotelId.name : 'Hotel no longer available' %><br>
+                                            <strong>Room Type:</strong> <%= booking.roomId ? booking.roomId.roomType : 'Room type not available' %><br>
+                                            <strong>Number of Rooms:</strong> <%= booking.numberOfRooms %>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Guest Information</h6>
+                                        <p>
+                                            <strong>Name:</strong> <%= booking.guestDetails.name %><br>
+                                            <strong>Email:</strong> <%= booking.guestDetails.email %><br>
+                                            <strong>Phone:</strong> <%= booking.guestDetails.phone %>
+                                        </p>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Check-in/Check-out</h6>
+                                        <p>
+                                            <% if(booking.checkInDate) { %>
+                                                <strong>Check-in:</strong> <%= booking.checkInDate.toLocaleDateString() %> at <%= booking.checkInTime %><br>
+                                                <strong>Check-out:</strong> <%= booking.checkOutDate.toLocaleDateString() %> at <%= booking.checkOutTime %><br>
+                                                <strong>Number of Nights:</strong> <%= booking.numberOfNights %>
+                                            <% } else { %>
+                                                <em>Check-in/out details not available for this booking</em>
+                                            <% } %>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Payment Details</h6>
+                                        <p>
+                                            <strong>Total Amount:</strong> ₹<%= booking.totalAmount %><br>
+                                            <strong>Status:</strong> 
+                                            <span class="badge bg-<%= booking.status === 'confirmed' ? 'success' : 
+                                                (booking.status === 'pending' ? 'warning' : 'danger') %>">
+                                                <%= booking.status.toUpperCase() %>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <% if(booking.specialRequests) { %>
+                                    <hr>
+                                    <h6>Special Requests</h6>
+                                    <p><%= booking.specialRequests %></p>
+                                <% } %>
+                            </div>
+                            <div class="modal-footer">
+                                <% if(booking.hotelId) { %>
+                                    <a href="/hotels/<%= booking.hotelId._id %>" class="btn btn-primary">View Hotel</a>
+                                <% } %>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>

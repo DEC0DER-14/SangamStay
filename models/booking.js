@@ -17,6 +17,29 @@ const bookingSchema = new Schema({
         ref: 'Room',
         required: true
     },
+    checkInDate: {
+        type: Date,
+        required: true
+    },
+    checkOutDate: {
+        type: Date,
+        required: true
+    },
+    checkInTime: {
+        type: String,
+        required: true,
+        default: '14:00' // Standard check-in time
+    },
+    checkOutTime: {
+        type: String,
+        required: true,
+        default: '11:00' // Standard check-out time
+    },
+    numberOfNights: {
+        type: Number,
+        required: true,
+        min: 1
+    },
     numberOfRooms: {
         type: Number,
         required: true,
@@ -26,6 +49,11 @@ const bookingSchema = new Schema({
         type: Number,
         required: true,
         min: 1
+    },
+    guestDetails: {
+        name: String,
+        email: String,
+        phone: String
     },
     specialRequests: String,
     totalAmount: {
