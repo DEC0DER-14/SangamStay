@@ -11,10 +11,39 @@
         <% } %>
     </div>
     
+    <!-- Search and Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="/bookings" method="GET" class="row g-3">
+                <!-- Search -->
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Search by hotel name or booking details"
+                           value="<%= typeof query !== 'undefined' ? query.search : '' %>">
+                </div>
+
+                <!-- Date Range Filter -->
+                <div class="col-md-3">
+                    <input type="date" class="form-control" name="startDate" 
+                           placeholder="Start Date"
+                           value="<%= typeof query !== 'undefined' ? query.startDate : '' %>">
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" name="endDate" 
+                           placeholder="End Date"
+                           value="<%= typeof query !== 'undefined' ? query.endDate : '' %>">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <% if(bookings.length === 0) { %>
         <div class="alert alert-info">
-            You haven't made any bookings yet. 
-            <a href="/hotels" class="alert-link">Browse hotels</a> to make your first booking!
+            No bookings found. <a href="/hotels">Book your first stay!</a>
         </div>
     <% } else { %>
         <div class="row">

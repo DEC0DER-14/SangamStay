@@ -5,17 +5,39 @@ const Booking = require('../models/booking');
 
 router.get('/', isLoggedIn, async (req, res) => {
     try {
-        const bookings = await Booking.find({ userId: req.user._id })
+        const { search, startDate, endDate } = req.query;
+        
+        // Build query
+        let query = { userId: req.user._id };
+
+        // Add search functionality
+        if (search) {
+            query.$or = [
+                { 'guestDetails.name': { $regex: search, $options: 'i' } },
+                { 'guestDetails.email': { $regex: search, $options: 'i' } },
+                { 'hotelId.name': { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Add date range filter
+        if (startDate || endDate) {
+            query.checkInDate = {};
+            if (startDate) query.checkInDate.$gte = new Date(startDate);
+            if (endDate) query.checkInDate.$lte = new Date(endDate);
+        }
+
+        let bookings = await Booking.find(query)
             .populate('hotelId')
             .populate('roomId')
-            .sort({ createdAt: -1 });
+            .sort({ checkInDate: 1 }); // Always sort by check-in date
 
-        // Filter out bookings with invalid references
-        const validBookings = bookings.filter(booking => booking.hotelId && booking.roomId);
-
-        res.render('bookings/index', { bookings: validBookings });
+        res.render('bookings/index', { 
+            bookings,
+            query: { search, startDate, endDate }
+        });
     } catch (e) {
-        req.flash('error', 'Unable to fetch your bookings');
+        console.error('Error fetching bookings:', e);
+        req.flash('error', 'Unable to load bookings');
         res.redirect('/hotels');
     }
 });

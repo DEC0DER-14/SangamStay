@@ -211,12 +211,40 @@ module.exports.createBooking = async (req, res) => {
 
 module.exports.showBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find({ userId: req.user._id })
-            .populate('hotelId')
-            .populate('roomId')
-            .exec();
+        const { search, sortBy } = req.query;
+        
+        // Build query
+        let query = { userId: req.user._id };
 
-        res.render('bookings/index', { bookings });
+        // Add search functionality
+        if (search) {
+            query.$or = [
+                { 'guestDetails.name': { $regex: search, $options: 'i' } },
+                { 'guestDetails.email': { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        let bookings = Booking.find(query)
+            .populate('hotelId')
+            .populate('roomId');
+
+        // Apply sorting
+        switch (sortBy) {
+            case 'dateAsc':
+                bookings = bookings.sort({ createdAt: 1 });
+                break;
+            case 'dateDesc':
+                bookings = bookings.sort({ createdAt: -1 });
+                break;
+            default:
+                bookings = bookings.sort({ createdAt: -1 }); // Default to newest first
+        }
+
+        bookings = await bookings.exec();
+        res.render('bookings/index', { 
+            bookings, 
+            query: { search, sortBy } 
+        });
     } catch (e) {
         console.error('Error fetching bookings:', e);
         req.flash('error', 'Unable to load bookings');

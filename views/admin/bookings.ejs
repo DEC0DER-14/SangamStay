@@ -1,51 +1,167 @@
 <% layout('layouts/boilerplate') %>
 <div class="container mt-5">
-    <h1>All Bookings</h1>
-    <div class="row">
-        <div class="col-12">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Booking ID</th>
-                            <th>User</th>
-                            <th>Hotel</th>
-                            <th>Room Type</th>
-                            <th>Rooms</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% bookings.forEach(booking => { %>
-                            <tr>
-                                <td><%= booking._id %></td>
-                                <td><%= booking.userId.username %></td>
-                                <td><%= booking.hotelId.name %></td>
-                                <td><%= booking.roomId.roomType %></td>
-                                <td><%= booking.numberOfRooms %></td>
-                                <td>₹<%= booking.totalAmount %></td>
-                                <td>
-                                    <span class="badge bg-<%= booking.status === 'confirmed' ? 'success' : 'warning' %>">
-                                        <%= booking.status %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <form action="/admin/bookings/<%= booking._id %>/status" method="POST" class="d-inline">
-                                        <select name="status" class="form-select form-select-sm d-inline" style="width: auto">
-                                            <option value="pending" <%= booking.status === 'pending' ? 'selected' : '' %>>Pending</option>
-                                            <option value="confirmed" <%= booking.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
-                                            <option value="cancelled" <%= booking.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-sm btn-success">Update</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-            </div>
+    <h1>Manage Bookings</h1>
+
+    <!-- Filters and Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="/admin/bookings" method="GET" class="row g-3">
+                <!-- Search -->
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Search by guest name or email"
+                           value="<%= query.search || '' %>">
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-3">
+                    <select class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="pending" <%= query.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="confirmed" <%= query.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                        <option value="cancelled" <%= query.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- Sort -->
+                <div class="col-md-3">
+                    <select class="form-select" name="sortBy">
+                        <option value="dateDesc" <%= query.sortBy === 'dateDesc' ? 'selected' : '' %>>Newest First</option>
+                        <option value="dateAsc" <%= query.sortBy === 'dateAsc' ? 'selected' : '' %>>Oldest First</option>
+                        <option value="amountDesc" <%= query.sortBy === 'amountDesc' ? 'selected' : '' %>>Amount (High to Low)</option>
+                        <option value="amountAsc" <%= query.sortBy === 'amountAsc' ? 'selected' : '' %>>Amount (Low to High)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </form>
         </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Guest</th>
+                    <th>Hotel</th>
+                    <th>Room</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% bookings.forEach(booking => { %>
+                    <tr>
+                        <td><small><%= booking._id %></small></td>
+                        <td>
+                            <%= booking.guestDetails.name %><br>
+                            <small class="text-muted"><%= booking.guestDetails.email %></small>
+                        </td>
+                        <td><%= booking.hotelId ? booking.hotelId.name : 'N/A' %></td>
+                        <td><%= booking.roomId ? booking.roomId.roomType : 'N/A' %></td>
+                        <td>
+                            <% if(booking.checkInDate) { %>
+                                <%= booking.checkInDate.toLocaleDateString() %><br>
+                                <small class="text-muted"><%= booking.checkInTime %></small>
+                            <% } else { %>
+                                <span class="text-muted">Not specified</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if(booking.checkOutDate) { %>
+                                <%= booking.checkOutDate.toLocaleDateString() %><br>
+                                <small class="text-muted"><%= booking.checkOutTime %></small>
+                            <% } else { %>
+                                <span class="text-muted">Not specified</span>
+                            <% } %>
+                        </td>
+                        <td>₹<%= booking.totalAmount %></td>
+                        <td>
+                            <span class="badge bg-<%= 
+                                booking.status === 'confirmed' ? 'success' : 
+                                (booking.status === 'pending' ? 'warning' : 'danger') %>">
+                                <%= booking.status.toUpperCase() %>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-info" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#detailsModal<%= booking._id %>">
+                                    Details
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" 
+                                        data-bs-toggle="dropdown">
+                                    Status
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form action="/admin/bookings/<%= booking._id %>/status" method="POST">
+                                            <input type="hidden" name="status" value="confirmed">
+                                            <button type="submit" class="dropdown-item">Confirm</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="/admin/bookings/<%= booking._id %>/status" method="POST">
+                                            <input type="hidden" name="status" value="cancelled">
+                                            <button type="submit" class="dropdown-item">Cancel</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Details Modal -->
+                    <div class="modal fade" id="detailsModal<%= booking._id %>" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Booking Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Guest Information</h6>
+                                            <p>
+                                                <strong>Name:</strong> <%= booking.guestDetails.name %><br>
+                                                <strong>Email:</strong> <%= booking.guestDetails.email %><br>
+                                                <strong>Phone:</strong> <%= booking.guestDetails.phone %><br>
+                                                <strong>Number of Guests:</strong> <%= booking.numberOfGuests %>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Booking Details</h6>
+                                            <p>
+                                                <strong>Number of Rooms:</strong> <%= booking.numberOfRooms %><br>
+                                                <% if(booking.numberOfNights) { %>
+                                                    <strong>Number of Nights:</strong> <%= booking.numberOfNights %><br>
+                                                <% } %>
+                                                <strong>Total Amount:</strong> ₹<%= booking.totalAmount %><br>
+                                                <strong>Created:</strong> <%= booking.createdAt.toLocaleString() %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <% if(booking.specialRequests) { %>
+                                        <div class="mt-3">
+                                            <h6>Special Requests</h6>
+                                            <p><%= booking.specialRequests %></p>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </tbody>
+        </table>
     </div>
 </div> 

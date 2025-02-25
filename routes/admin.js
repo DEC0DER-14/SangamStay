@@ -37,13 +37,72 @@ router.post('/hotels/:id/rooms', isLoggedIn, isAdmin, catchAsync(async (req, res
     res.redirect('/admin/dashboard');
 }));
 
-// View all bookings
+// View all bookings with advanced filtering
 router.get('/bookings', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
-    const bookings = await Booking.find({})
-        .populate('userId')
-        .populate('hotelId')
-        .populate('roomId');
-    res.render('admin/bookings', { bookings });
+    try {
+        const { status, sortBy, search } = req.query;
+        
+        // Build query
+        let query = {};
+        
+        // Filter by status if specified
+        if (status && ['pending', 'confirmed', 'cancelled'].includes(status)) {
+            query.status = status;
+        }
+
+        // Search by guest name, email, or hotel name
+        if (search) {
+            query.$or = [
+                { 'guestDetails.name': { $regex: search, $options: 'i' } },
+                { 'guestDetails.email': { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        let bookings = Booking.find(query)
+            .populate('userId')
+            .populate('hotelId')
+            .populate('roomId');
+
+        // Apply sorting
+        switch (sortBy) {
+            case 'dateAsc':
+                bookings = bookings.sort({ checkInDate: 1 });
+                break;
+            case 'dateDesc':
+                bookings = bookings.sort({ checkInDate: -1 });
+                break;
+            case 'amountAsc':
+                bookings = bookings.sort({ totalAmount: 1 });
+                break;
+            case 'amountDesc':
+                bookings = bookings.sort({ totalAmount: -1 });
+                break;
+            default:
+                bookings = bookings.sort({ createdAt: -1 }); // Default sort by newest
+        }
+
+        bookings = await bookings.exec();
+        res.render('admin/bookings', { bookings, query: { status, sortBy, search } });
+    } catch (e) {
+        console.error('Error fetching admin bookings:', e);
+        req.flash('error', 'Error loading bookings');
+        res.redirect('/admin/dashboard');
+    }
+}));
+
+// Update booking status
+router.post('/bookings/:id/status', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        await Booking.findByIdAndUpdate(id, { status });
+        req.flash('success', 'Booking status updated successfully');
+    } catch (e) {
+        console.error('Error updating booking status:', e);
+        req.flash('error', 'Failed to update booking status');
+    }
+    res.redirect('/admin/bookings');
 }));
 
 // Manage users
