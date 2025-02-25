@@ -135,22 +135,26 @@
     function updatePriceDetails() {
         const selectedOption = roomTypeSelect.options[roomTypeSelect.selectedIndex];
         const pricePerNight = selectedOption ? Number(selectedOption.dataset.price) : 0;
-        const numberOfRooms = Number(numberOfRoomsInput.value);
+        const numberOfRooms = Number(numberOfRoomsInput.value) || 1;
         const capacity = selectedOption ? Number(selectedOption.dataset.capacity) : 0;
 
         // Calculate number of nights
         const checkInDate = new Date(checkInDateInput.value);
         const checkOutDate = new Date(checkOutDateInput.value);
-        const numberOfNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+        const numberOfNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)) || 0;
 
-        roomRateSpan.textContent = pricePerNight;
+        // Update display values, replacing NaN with 0
+        roomRateSpan.textContent = pricePerNight || 0;
         roomCountSpan.textContent = numberOfRooms;
-        nightCountSpan.textContent = numberOfNights > 0 ? numberOfNights : 0;
-        totalAmountSpan.textContent = numberOfNights > 0 ? pricePerNight * numberOfRooms * numberOfNights : 0;
+        nightCountSpan.textContent = numberOfNights;
+        
+        // Calculate total amount, ensuring we don't display NaN
+        const total = (pricePerNight * numberOfRooms * numberOfNights) || 0;
+        totalAmountSpan.textContent = total;
 
         // Update guest capacity message
         const maxGuests = capacity * numberOfRooms;
-        const currentGuests = Number(numberOfGuestsInput.value);
+        const currentGuests = Number(numberOfGuestsInput.value) || 1;
         if (currentGuests > maxGuests) {
             guestCapacityMessage.textContent = `Maximum ${maxGuests} guests allowed for ${numberOfRooms} room(s)`;
             guestCapacityMessage.classList.add('text-danger');
