@@ -44,4 +44,12 @@ router.post('/create-admin', catchAsync(async (req, res) => {
 
 router.get('/verify-email/:token', checkVerificationToken, users.verifyEmail);
 
+router.route('/forgot-password')
+    .get(users.renderForgotPassword)
+    .post(catchAsync(users.forgotPassword));
+
+router.route('/reset-password/:token')
+    .get(catchAsync(users.renderResetPassword))
+    .post(catchAsync(users.resetPassword));
+
 module.exports = router; 

@@ -7,6 +7,7 @@ const { generateToken } = require('../middleware/auth');
 const crypto = require('crypto');
 const { sendVerificationEmail } = require('../utils/email');
 const PendingUser = require('../models/pendingUser');
+const transporter = require('../utils/emailTransporter');
 
 module.exports.renderRegister = (req, res) => {
     res.render('users/register');
@@ -223,4 +224,113 @@ module.exports.changePassword = async (req, res) => {
         req.flash('error', 'Current password is incorrect');
         res.redirect('/change-password');
     }
-} 
+}
+
+module.exports.renderForgotPassword = (req, res) => {
+    res.render('users/forgot-password');
+};
+
+module.exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            req.flash('error', 'No account exists with that email address');
+            return res.redirect('/forgot-password');
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        await user.save();
+
+        // Send reset email
+        const resetLink = `${process.env.BASE_URL}/reset-password/${resetToken}`;
+        const mailOptions = {
+            from: `"SangamStay" <${process.env.EMAIL_USERNAME}>`,
+            to: email,
+            subject: 'Reset Your SangamStay Password',
+            html: `
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+                    <h2 style="color: #3498db; text-align: center;">Reset Your Password</h2>
+                    <p>You are receiving this email because you (or someone else) requested a password reset for your account.</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${resetLink}" 
+                           style="background-color: #3498db; color: white; padding: 12px 30px; 
+                                  text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            Reset Password
+                        </a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">
+                        If you did not request this, please ignore this email and your password will remain unchanged.
+                    </p>
+                    <p style="color: #666; font-size: 14px;">
+                        This password reset link will expire in 1 hour.
+                    </p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        req.flash('success', 'An email has been sent with password reset instructions');
+        res.redirect('/login');
+    } catch (e) {
+        req.flash('error', 'Error sending password reset email');
+        res.redirect('/forgot-password');
+    }
+};
+
+module.exports.renderResetPassword = async (req, res) => {
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: req.params.token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            req.flash('error', 'Password reset token is invalid or has expired');
+            return res.redirect('/forgot-password');
+        }
+
+        res.render('users/reset-password', { token: req.params.token });
+    } catch (e) {
+        req.flash('error', 'Error loading reset password page');
+        res.redirect('/forgot-password');
+    }
+};
+
+module.exports.resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password, confirmPassword } = req.body;
+
+        if (password !== confirmPassword) {
+            req.flash('error', 'Passwords do not match');
+            return res.redirect(`/reset-password/${token}`);
+        }
+
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            req.flash('error', 'Password reset token is invalid or has expired');
+            return res.redirect('/forgot-password');
+        }
+
+        // Set the new password
+        await user.setPassword(password);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        req.flash('success', 'Your password has been changed successfully');
+        res.redirect('/login');
+    } catch (e) {
+        req.flash('error', 'Error resetting password');
+        res.redirect('/forgot-password');
+    }
+}; 
