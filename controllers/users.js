@@ -191,4 +191,36 @@ module.exports.resendVerification = async (req, res) => {
     } catch (e) {
         res.status(500).json({ message: 'Failed to resend verification email' });
     }
-}; 
+};
+
+module.exports.renderChangePassword = (req, res) => {
+    res.render('users/change-password');
+}
+
+module.exports.changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+        
+        // Check if new password and confirm password match
+        if (newPassword !== confirmPassword) {
+            req.flash('error', 'New passwords do not match');
+            return res.redirect('/change-password');
+        }
+
+        // Change password using passport-local-mongoose method
+        const user = await User.findById(req.user._id);
+        await user.changePassword(oldPassword, newPassword);
+        
+        // Log out of all sessions
+        req.logout((err) => {
+            if (err) {
+                return next(err);
+            }
+            req.flash('success', 'Password changed successfully. Please log in with your new password');
+            res.redirect('/login');
+        });
+    } catch (e) {
+        req.flash('error', 'Current password is incorrect');
+        res.redirect('/change-password');
+    }
+} 

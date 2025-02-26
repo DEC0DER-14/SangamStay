@@ -29,6 +29,10 @@ router.get('/profile', isLoggedIn, users.showProfile);
 router.get('/profile/edit', isLoggedIn, users.renderEditProfile);
 router.put('/profile', isLoggedIn, catchAsync(users.updateProfile));
 
+// Add these new routes for password change
+router.get('/change-password', isLoggedIn, users.renderChangePassword);
+router.post('/change-password', isLoggedIn, catchAsync(users.changePassword));
+
 // Add this route for creating an admin (should be protected in production)
 router.post('/create-admin', catchAsync(async (req, res) => {
     const { username, email, password, phone } = req.body;
