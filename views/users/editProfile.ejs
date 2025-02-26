@@ -1,28 +1,86 @@
 <% layout('layouts/boilerplate') %>
+
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <div class="card">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
                 <div class="card-body">
-                    <h2 class="card-title">Edit Profile</h2>
-                    <form action="/profile?_method=PUT" method="POST">
+                    <h2 class="card-title mb-4">Edit Profile</h2>
+                    <form action="/profile?_method=PUT" method="POST" novalidate class="validated-form">
                         <div class="mb-3">
                             <label class="form-label" for="username">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" required>
+                            <input class="form-control" type="text" id="username" name="username" 
+                                   value="<%= user.username %>" required>
+                            <div class="valid-feedback">Looks good!</div>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label" for="email">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+                            <input class="form-control" type="email" id="email" name="email" 
+                                   value="<%= user.email %>" required>
+                            <div class="valid-feedback">Looks good!</div>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label" for="phone">Phone</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" value="<%= user.phone %>">
+                            <label class="form-label" for="phone">Phone Number</label>
+                            <input class="form-control" type="tel" id="phone" name="phone" 
+                                   value="<%= user.phone %>" required>
+                            <div class="valid-feedback">Looks good!</div>
                         </div>
-                        <button class="btn btn-success">Update Profile</button>
-                        <a href="/profile" class="btn btn-secondary">Cancel</a>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary">Update Profile</button>
+                            <a href="/profile" class="btn btn-secondary">Cancel</a>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+    // Form validation
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.validated-form')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+    .card-title {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    .btn-primary {
+        background-color: #3498db;
+        border: none;
+        padding: 10px;
+    }
+    .btn-secondary {
+        background-color: #95a5a6;
+        border: none;
+        padding: 10px;
+    }
+    .form-label {
+        font-weight: 500;
+        color: #34495e;
+    }
+    .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+</style> 

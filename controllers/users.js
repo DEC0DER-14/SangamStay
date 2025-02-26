@@ -86,4 +86,21 @@ module.exports.updateProfile = async (req, res) => {
         req.flash('success', 'Profile updated successfully!');
         res.redirect('/hotels');
     });
-} 
+}
+
+module.exports.showProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id)
+            .populate({
+                path: 'bookings',
+                populate: {
+                    path: 'hotelId',
+                    model: 'Hotel'
+                }
+            });
+        res.render('users/profile', { user });
+    } catch (e) {
+        req.flash('error', 'Error loading profile');
+        res.redirect('/');
+    }
+}; 

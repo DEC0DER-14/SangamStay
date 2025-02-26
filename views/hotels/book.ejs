@@ -12,11 +12,13 @@
                             <div class="col-md-6">
                                 <label class="form-label" for="checkInDate">Check-in Date</label>
                                 <input class="form-control" type="date" id="checkInDate" name="checkInDate" 
+                                       value="<%= formData ? formData.checkInDate : new Date().toISOString().split('T')[0] %>" 
                                        min="<%= new Date().toISOString().split('T')[0] %>" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="checkOutDate">Check-out Date</label>
                                 <input class="form-control" type="date" id="checkOutDate" name="checkOutDate" 
+                                       value="<%= formData ? formData.checkOutDate : new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] %>" 
                                        min="<%= new Date().toISOString().split('T')[0] %>" required>
                             </div>
                         </div>
@@ -44,7 +46,8 @@
                                 <% hotel.rooms.forEach(room => { %>
                                     <option value="<%= room._id %>" 
                                             data-price="<%= room.pricePerNight %>"
-                                            data-capacity="<%= room.capacity %>">
+                                            data-capacity="<%= room.capacity %>"
+                                            <%= formData && formData.roomType === room._id.toString() ? 'selected' : '' %>>
                                         <%= room.roomType %> - ₹<%= room.pricePerNight %> per night
                                     </option>
                                 <% }) %>
@@ -58,18 +61,21 @@
                                 <div class="col-md-6">
                                     <label class="form-label" for="guestName">Guest Name</label>
                                     <input class="form-control" type="text" id="guestName" 
-                                           name="guestDetails[name]" value="<%= currentUser.username %>" required>
+                                           name="guestDetails[name]" 
+                                           value="<%= formData ? formData.guestDetails.name : currentUser.username %>" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label" for="guestPhone">Phone Number</label>
                                     <input class="form-control" type="tel" id="guestPhone" 
-                                           name="guestDetails[phone]" required>
+                                           name="guestDetails[phone]" 
+                                           value="<%= formData ? formData.guestDetails.phone : '' %>" required>
                                 </div>
                             </div>
                             <div class="mt-2">
                                 <label class="form-label" for="guestEmail">Email</label>
                                 <input class="form-control" type="email" id="guestEmail" 
-                                       name="guestDetails[email]" value="<%= currentUser.email %>" required>
+                                       name="guestDetails[email]" 
+                                       value="<%= formData ? formData.guestDetails.email : currentUser.email %>" required>
                             </div>
                         </div>
 
@@ -78,13 +84,15 @@
                             <div class="col-md-6">
                                 <label class="form-label" for="numberOfRooms">Number of Rooms</label>
                                 <input class="form-control" type="number" id="numberOfRooms" 
-                                       name="numberOfRooms" min="1" value="1" required>
+                                       name="numberOfRooms" min="1" 
+                                       value="<%= formData ? formData.numberOfRooms : 1 %>" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="numberOfGuests">Number of Guests</label>
                                 <input class="form-control" type="number" id="numberOfGuests" 
-                                       name="numberOfGuests" min="1" value="1" required>
-                                <small id="guestCapacityMessage" class="text-muted"></small>
+                                       name="numberOfGuests" min="1" 
+                                       value="<%= formData ? formData.numberOfGuests : 1 %>" required>
+                                <small id="guestCapacityMessage" class="text-muted">Maximum 2 guests per room</small>
                             </div>
                         </div>
 
@@ -92,7 +100,7 @@
                         <div class="mb-3">
                             <label class="form-label" for="specialRequests">Special Requests</label>
                             <textarea class="form-control" id="specialRequests" name="specialRequests" 
-                                      rows="3" placeholder="Any special requests or preferences?"></textarea>
+                                      rows="3" placeholder="Any special requests or preferences?"><%= formData ? formData.specialRequests : '' %></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Confirm Booking</button>
@@ -153,13 +161,13 @@
         totalAmountSpan.textContent = total;
 
         // Update guest capacity message
-        const maxGuests = capacity * numberOfRooms;
         const currentGuests = Number(numberOfGuestsInput.value) || 1;
+        const maxGuests = 2 * numberOfRooms;
         if (currentGuests > maxGuests) {
-            guestCapacityMessage.textContent = `Maximum ${maxGuests} guests allowed for ${numberOfRooms} room(s)`;
+            guestCapacityMessage.textContent = `Maximum ${maxGuests} guests allowed for ${numberOfRooms} room(s) (2 guests per room)`;
             guestCapacityMessage.classList.add('text-danger');
         } else {
-            guestCapacityMessage.textContent = `Maximum capacity: ${maxGuests} guests`;
+            guestCapacityMessage.textContent = `Maximum capacity: ${maxGuests} guests (2 guests per room)`;
             guestCapacityMessage.classList.remove('text-danger');
         }
     }
@@ -174,6 +182,18 @@
         checkOutDateInput.min = this.value;
         if (checkOutDateInput.value && checkOutDateInput.value < this.value) {
             checkOutDateInput.value = this.value;
+        }
+    });
+
+    // Add validation before form submission
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        const numberOfRooms = Number(numberOfRoomsInput.value) || 1;
+        const numberOfGuests = Number(numberOfGuestsInput.value) || 1;
+        const guestsPerRoom = numberOfGuests / numberOfRooms;
+
+        if (guestsPerRoom > 2) {
+            e.preventDefault();
+            alert('Maximum 2 guests allowed per room. Please adjust your booking.');
         }
     });
 

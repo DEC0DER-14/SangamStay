@@ -27,22 +27,42 @@
                             <i class="fas fa-user-circle me-1"></i><%= currentUser.username %>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                            <li>
+                                <a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user me-2"></i>My Profile
+                                </a>
+                            </li>
                             <% if(currentUser.role === 'admin') { %>
-                                <li><a class="dropdown-item" href="/admin/bookings">Manage Bookings</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="/admin/bookings">
+                                        <i class="fas fa-calendar-check me-2"></i>Manage Bookings
+                                    </a>
+                                </li>
                             <% } else { %>
-                                <li><a class="dropdown-item" href="/bookings">My Bookings</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="/bookings">
+                                        <i class="fas fa-suitcase me-2"></i>My Bookings
+                                    </a>
+                                </li>
                             <% } %>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                            <li>
+                                <a class="dropdown-item" href="/logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 <% } else { %>
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
+                        <a class="nav-link" href="/login">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/register">Register</a>
+                        <a class="nav-link" href="/register">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
                     </li>
                 <% } %>
             </ul>

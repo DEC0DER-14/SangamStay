@@ -29,7 +29,7 @@ router.route('/login')
 
 router.get('/logout', users.logout);
 
-router.get('/profile', isLoggedIn, users.renderProfile);
+router.get('/profile', isLoggedIn, users.showProfile);
 router.get('/profile/edit', isLoggedIn, users.renderEditProfile);
 router.put('/profile', isLoggedIn, catchAsync(users.updateProfile));
 

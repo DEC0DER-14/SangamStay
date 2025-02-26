@@ -5,6 +5,7 @@ const Hotel = require('../models/hotel');
 const Booking = require('../models/booking');
 const User = require('../models/user');
 const catchAsync = require('../utils/catchAsync');
+const hotels = require('../controllers/hotels');
 
 // Admin dashboard
 router.get('/dashboard', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
@@ -91,24 +92,15 @@ router.get('/bookings', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
 }));
 
 // Update booking status
-router.post('/bookings/:id/status', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
-        
-        await Booking.findByIdAndUpdate(id, { status });
-        req.flash('success', 'Booking status updated successfully');
-    } catch (e) {
-        console.error('Error updating booking status:', e);
-        req.flash('error', 'Failed to update booking status');
-    }
-    res.redirect('/admin/bookings');
-}));
+router.post('/bookings/:bookingId/status', isLoggedIn, isAdmin, catchAsync(hotels.updateBookingStatus));
 
 // Manage users
 router.get('/users', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
     const users = await User.find({});
     res.render('admin/users', { users });
 }));
+
+// Update booking details
+router.post('/bookings/:bookingId/update', isLoggedIn, isAdmin, catchAsync(hotels.updateBookingDetails));
 
 module.exports = router; 

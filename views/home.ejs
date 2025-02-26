@@ -1,39 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SangamStay</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/stylesheets/home.css">
-</head>
-<body class="d-flex text-center text-white bg-dark">
-    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-        <header class="mb-auto">
-            <div>
-                <h3 class="float-md-start mb-0">SangamStay</h3>
-                <nav class="nav nav-masthead justify-content-center float-md-end">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
-                    <a class="nav-link" href="/hotels">Hotels</a>
-                    <% if(!currentUser) { %>
-                    <a class="nav-link" href="/login">Login</a>
-                    <a class="nav-link" href="/register">Register</a>
-                    <% } else { %>
-                    <a class="nav-link" href="/logout">Logout</a>
-                    <% } %>
-                </nav>
-            </div>
-        </header>
-        <main class="px-3">
-            <h1>SangamStay</h1>
-            <p class="lead">Welcome to SangamStay! <br> Jump right in and explore our many hotels. <br>
+<% layout('layouts/boilerplate') %>
+
+<div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+    <main class="px-3 text-center text-white">
+        <div class="container mt-5">
+            <h1 class="display-4">SangamStay</h1>
+            <p class="lead mb-4">Welcome to SangamStay! <br> Jump right in and explore our many hotels. <br>
                 Feel free to share some of your own and comment on others!</p>
-            <a href="/hotels" class="btn btn-lg btn-secondary font-weight-bold border-white bg-white">View Hotels</a>
-        </main>
-        <footer class="mt-auto text-white-50">
-            <p>&copy; 2024 SangamStay</p>
-        </footer>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html> 
+            <a href="/hotels" class="btn btn-lg btn-light font-weight-bold">View Hotels</a>
+        </div>
+    </main>
+    <footer class="mt-auto text-center text-white-50">
+        <p>&copy; 2024 SangamStay</p>
+    </footer>
+</div>
+
+<style>
+    body {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                    url('https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=2049&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        min-height: 100vh;
+    }
+
+    .cover-container {
+        max-width: 60vw;
+        padding-top: 10vh;
+    }
+
+    .display-4 {
+        font-size: 3.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .lead {
+        font-size: 1.4rem;
+        font-weight: 400;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    .btn-light {
+        padding: 0.8rem 2rem;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-light:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+    }
+
+    footer {
+        position: fixed;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+    }
+
+    @media (max-width: 768px) {
+        .cover-container {
+            max-width: 90vw;
+            padding-top: 5vh;
+        }
+
+        .display-4 {
+            font-size: 2.5rem;
+        }
+
+        .lead {
+            font-size: 1.2rem;
+        }
+    }
+</style> 

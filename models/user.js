@@ -15,6 +15,14 @@ const UserSchema = new Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user'
+    },
+    bookings: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Booking'
+    }],
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

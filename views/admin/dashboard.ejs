@@ -71,4 +71,53 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- Add this modal for editing booking details -->
+<div class="modal fade" id="editBookingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editBookingForm" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label" for="editNumberOfRooms">Number of Rooms</label>
+                        <input type="number" class="form-control" id="editNumberOfRooms" 
+                               name="numberOfRooms" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editNumberOfGuests">Number of Guests</label>
+                        <input type="number" class="form-control" id="editNumberOfGuests" 
+                               name="numberOfGuests" min="1" required>
+                        <small class="text-muted">Maximum 2 guests per room</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Booking</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add this script at the bottom of the page -->
+<script>
+function openEditBookingModal(bookingId, rooms, guests) {
+    document.getElementById('editBookingForm').action = `/admin/bookings/${bookingId}/update`;
+    document.getElementById('editNumberOfRooms').value = rooms;
+    document.getElementById('editNumberOfGuests').value = guests;
+    new bootstrap.Modal(document.getElementById('editBookingModal')).show();
+}
+
+// Add form validation
+document.getElementById('editBookingForm').addEventListener('submit', function(e) {
+    const rooms = Number(document.getElementById('editNumberOfRooms').value);
+    const guests = Number(document.getElementById('editNumberOfGuests').value);
+    
+    if (guests / rooms > 2) {
+        e.preventDefault();
+        alert('Maximum 2 guests allowed per room');
+    }
+});
+</script> 
