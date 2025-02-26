@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 const catchAsync = require('../utils/catchAsync');
 const users = require('../controllers/users');
-const { isLoggedIn } = require('../middleware');
+const { isLoggedIn, isVerified, checkVerificationToken } = require('../middleware');
 const User = require('../models/user');
 
 router.route('/register')
@@ -16,7 +16,7 @@ router.route('/login')
         failureFlash: true, 
         failureRedirect: '/login',
         keepSessionInfo: true 
-    }), (req, res) => {
+    }), isVerified, (req, res) => {
         req.flash('success', 'Welcome back!');
         if (req.user.role === 'admin') {
             res.redirect('/admin/dashboard');
@@ -41,5 +41,9 @@ router.post('/create-admin', catchAsync(async (req, res) => {
     req.flash('success', 'Successfully created admin account');
     res.redirect('/hotels');
 }));
+
+router.get('/verify-email/:token', checkVerificationToken, users.verifyEmail);
+
+router.post('/resend-verification', catchAsync(users.resendVerification));
 
 module.exports = router; 

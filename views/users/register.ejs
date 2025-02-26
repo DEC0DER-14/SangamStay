@@ -33,4 +33,14 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+    const form = document.querySelector('form');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', () => {
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
+        submitButton.disabled = true;
+    });
+</script> 

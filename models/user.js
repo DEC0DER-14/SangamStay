@@ -23,7 +23,13 @@ const UserSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: String,
+    verificationTokenExpires: Date
 });
 
 UserSchema.plugin(passportLocalMongoose);

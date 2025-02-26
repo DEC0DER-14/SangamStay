@@ -5,6 +5,7 @@ const Review = require('./models/review');
 const { reviewSchema } = require('./schemas');
 const rateLimit = require('express-rate-limit');
 const { requireJWT } = require('./middleware/auth');
+const User = require('./models/user');
 
 module.exports.isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated() && !req.jwtUser) {
@@ -95,5 +96,33 @@ module.exports.deleteHotel = async (req, res) => {
     } catch (e) {
         req.flash('error', 'Error deleting hotel');
         res.redirect(`/hotels/${req.params.id}`);
+    }
+};
+
+module.exports.isVerified = async (req, res, next) => {
+    if (!req.user.isVerified) {
+        req.logout();
+        req.flash('error', 'Please verify your email before logging in');
+        return res.redirect('/login');
+    }
+    next();
+};
+
+module.exports.checkVerificationToken = async (req, res, next) => {
+    try {
+        const { token } = req.params;
+        const user = await User.findOne({
+            verificationToken: token,
+            verificationTokenExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            req.flash('error', 'Verification link has expired. Please request a new one.');
+            return res.redirect('/login');
+        }
+        next();
+    } catch (e) {
+        req.flash('error', 'Invalid verification link');
+        res.redirect('/login');
     }
 }; 
