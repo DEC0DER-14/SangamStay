@@ -11,21 +11,17 @@ router.route('/register')
     .post(catchAsync(users.register));
 
 router.route('/login')
-    .get(users.renderLogin)
+    .get((req, res) => {
+        if (req.isAuthenticated()) {
+            return res.redirect('/hotels');
+        }
+        res.render('users/login');
+    })
     .post(passport.authenticate('local', { 
         failureFlash: true, 
         failureRedirect: '/login',
         keepSessionInfo: true 
-    }), isVerified, (req, res) => {
-        req.flash('success', 'Welcome back!');
-        if (req.user.role === 'admin') {
-            res.redirect('/admin/dashboard');
-        } else {
-            const redirectUrl = req.session.returnTo || '/hotels';
-            delete req.session.returnTo;
-            res.redirect(redirectUrl);
-        }
-    });
+    }), isVerified, users.login);
 
 router.get('/logout', users.logout);
 
@@ -44,6 +40,6 @@ router.post('/create-admin', catchAsync(async (req, res) => {
 
 router.get('/verify-email/:token', checkVerificationToken, users.verifyEmail);
 
-router.post('/resend-verification', catchAsync(users.resendVerification));
+router.post('/resend-verification', express.json(), catchAsync(users.resendVerification));
 
 module.exports = router; 

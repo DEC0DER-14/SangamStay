@@ -30,9 +30,9 @@ module.exports.register = async (req, res) => {
         const pendingUser = new PendingUser({
             username,
             email,
-            password, // Note: In production, you should hash this password
+            password,
             verificationToken,
-            verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+            verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000
         });
 
         await pendingUser.save();
@@ -40,7 +40,10 @@ module.exports.register = async (req, res) => {
         // Send verification email
         await sendVerificationEmail(email, verificationToken);
 
-        req.flash('success', 'Please check your email to verify your account.');
+        // Only set session variable
+        req.session.pendingVerificationEmail = email;
+        req.flash('success', 'registered');  // Just a flag to show the alert
+        
         res.redirect('/login');
     } catch (e) {
         req.flash('error', e.message);
@@ -49,16 +52,25 @@ module.exports.register = async (req, res) => {
 };
 
 module.exports.renderLogin = (req, res) => {
-    res.render('users/login');
+    res.render('users/login', { 
+        pendingVerificationEmail: req.session.pendingVerificationEmail 
+    });
 }
 
 module.exports.login = (req, res) => {
+    req.flash('success', 'Welcome back!');
+    const redirectUrl = req.session.returnTo || '/hotels';
+    delete req.session.returnTo;
+    
+    // Clear browser history and redirect
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     if (req.user.role === 'admin') {
-        res.redirect('/admin/dashboard');
+        return res.redirect('/admin/dashboard');
     } else {
-        const redirectUrl = req.session.returnTo || '/hotels';
-        delete req.session.returnTo;
-        res.redirect(redirectUrl);
+        return res.redirect(redirectUrl);
     }
 }
 
@@ -119,7 +131,6 @@ module.exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.params;
         
-        // Find pending user
         const pendingUser = await PendingUser.findOne({
             verificationToken: token,
             verificationTokenExpires: { $gt: Date.now() }
@@ -145,6 +156,7 @@ module.exports.verifyEmail = async (req, res) => {
 
         req.flash('success', 'Email verified successfully! You can now login.');
         res.redirect('/login');
+        
     } catch (e) {
         req.flash('error', 'Something went wrong during verification');
         res.redirect('/register');
@@ -159,8 +171,7 @@ module.exports.resendVerification = async (req, res) => {
         const pendingUser = await PendingUser.findOne({ email });
         
         if (!pendingUser) {
-            req.flash('error', 'No pending verification found for this email');
-            return res.redirect('/login');
+            return res.status(404).json({ message: 'No pending verification found for this email' });
         }
 
         // Create new verification token
@@ -171,10 +182,8 @@ module.exports.resendVerification = async (req, res) => {
         // Resend verification email
         await sendVerificationEmail(email, pendingUser.verificationToken);
 
-        req.flash('success', 'Verification email has been resent');
-        res.redirect('/login');
+        res.status(200).json({ message: 'Verification email has been resent' });
     } catch (e) {
-        req.flash('error', 'Failed to resend verification email');
-        res.redirect('/login');
+        res.status(500).json({ message: 'Failed to resend verification email' });
     }
 }; 
