@@ -101,12 +101,19 @@ module.exports.deleteHotel = async (req, res) => {
 };
 
 module.exports.isVerified = async (req, res, next) => {
+    console.log('User verification status:', req.user.isVerified);
+    console.log('Full user object:', req.user);
     if (!req.user.isVerified) {
-        req.logout();
-        req.flash('error', 'Please verify your email before logging in');
-        return res.redirect('/login');
+        req.logout((err) => {
+            if (err) {
+                return next(err);
+            }
+            req.flash('error', 'Please verify your email before logging in');
+            return res.redirect('/login');
+        });
+    } else {
+        next();
     }
-    next();
 };
 
 module.exports.checkVerificationToken = async (req, res, next) => {

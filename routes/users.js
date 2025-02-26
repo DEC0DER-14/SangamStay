@@ -40,6 +40,4 @@ router.post('/create-admin', catchAsync(async (req, res) => {
 
 router.get('/verify-email/:token', checkVerificationToken, users.verifyEmail);
 
-router.post('/resend-verification', express.json(), catchAsync(users.resendVerification));
-
 module.exports = router; 

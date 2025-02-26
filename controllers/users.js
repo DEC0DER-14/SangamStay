@@ -40,10 +40,7 @@ module.exports.register = async (req, res) => {
         // Send verification email
         await sendVerificationEmail(email, verificationToken);
 
-        // Only set session variable
-        req.session.pendingVerificationEmail = email;
-        req.flash('success', 'registered');  // Just a flag to show the alert
-        
+        req.flash('success', 'Please verify your email to sign in');
         res.redirect('/login');
     } catch (e) {
         req.flash('error', e.message);
@@ -148,8 +145,15 @@ module.exports.verifyEmail = async (req, res) => {
             isVerified: true
         });
 
+        console.log('Creating new verified user:', user);
+
         // Register user with passport
-        await User.register(user, pendingUser.password);
+        const registeredUser = await User.register(user, pendingUser.password);
+        console.log('Registered user verification status:', registeredUser.isVerified);
+        
+        // Double-check verification status
+        const savedUser = await User.findById(registeredUser._id);
+        console.log('Saved user verification status:', savedUser.isVerified);
         
         // Delete pending user
         await PendingUser.findByIdAndDelete(pendingUser._id);
@@ -158,6 +162,7 @@ module.exports.verifyEmail = async (req, res) => {
         res.redirect('/login');
         
     } catch (e) {
+        console.error('Verification error:', e);
         req.flash('error', 'Something went wrong during verification');
         res.redirect('/register');
     }
