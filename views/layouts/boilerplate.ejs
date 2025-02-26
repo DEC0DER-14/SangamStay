@@ -9,58 +9,96 @@
     <link rel="stylesheet" href="/stylesheets/hotels.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            position: relative;
+            margin: 0;
+            padding-bottom: 0;
+        }
+
+        main {
+            min-height: calc(100vh - 60px); /* Adjust 60px according to your navbar height */
+            padding-bottom: 50px; /* Give some space before footer */
+        }
+
+        .footer {
+            width: 100%;
+            background-color: #212529;
+            margin-top: auto;
+            position: relative; /* Changed from fixed to relative */
+            bottom: 0;
+        }
+
+        .footer a {
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #0d6efd !important;
+        }
+
+        .footer .social-links a:hover {
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                text-align: center;
+            }
+            
+            .footer .col-md-6 {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
 </head>
-<body class="d-flex flex-column vh-100">
+<body>
     <%- include('../partials/navbar') %>
     <main class="container mt-5">
         <%- include('../partials/flash') %>
         <%- body %>
     </main>
     <%- include('../partials/footer') %>
+    
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Example starter JavaScript for disabling form submissions if there are invalid fields
+        // Form validation
         (function () {
             'use strict'
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
             const forms = document.querySelectorAll('.validated-form')
-            // Loop over them and prevent submission
-            Array.from(forms)
-                .forEach(function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (!form.checkValidity()) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                        }
-                        form.classList.add('was-validated')
-                    }, false)
-                })
+            Array.from(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
         })()
-    </script>
-    <script>
+
+        // Dropdown initialization
         document.addEventListener('DOMContentLoaded', function() {
             var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
             var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
                 return new bootstrap.Dropdown(dropdownToggleEl);
             });
         });
-    </script>
-    <script>
+
+        // Delete modal handling
         document.addEventListener('DOMContentLoaded', function() {
-            // Get the modal and its buttons
             const deleteModal = document.getElementById('deleteConfirmationModal');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             let formToSubmit = null;
 
-            // When delete button is clicked, store the form
             document.querySelectorAll('.delete-hotel-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     formToSubmit = this.closest('form');
                 });
             });
 
-            // When confirm button in modal is clicked, submit the stored form
             if (confirmDeleteBtn) {
                 confirmDeleteBtn.addEventListener('click', function() {
                     if (formToSubmit) {
@@ -69,7 +107,6 @@
                 });
             }
 
-            // Clear the stored form when modal is closed
             if (deleteModal) {
                 deleteModal.addEventListener('hidden.bs.modal', function() {
                     formToSubmit = null;

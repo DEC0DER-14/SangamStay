@@ -7,9 +7,9 @@
         <form class="d-flex" action="/hotels" method="GET">
             <input class="form-control me-2" type="search" placeholder="Search hotels by name or location" 
                    name="search" value="<%= typeof search !== 'undefined' ? search : '' %>">
-            <button class="btn btn-outline-primary" type="submit">Search</button>
+            <button class="btn btn-primary" type="submit">Search</button>
             <% if(typeof search !== 'undefined' && search) { %>
-                <a href="/hotels" class="btn btn-outline-secondary ms-2">Clear</a>
+                <a href="/hotels" class="btn btn-secondary ms-2">Clear</a>
             <% } %>
         </form>
     </div>
