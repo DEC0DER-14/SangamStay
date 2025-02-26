@@ -146,15 +146,8 @@ module.exports.verifyEmail = async (req, res) => {
             isVerified: true
         });
 
-        console.log('Creating new verified user:', user);
-
         // Register user with passport
         const registeredUser = await User.register(user, pendingUser.password);
-        console.log('Registered user verification status:', registeredUser.isVerified);
-        
-        // Double-check verification status
-        const savedUser = await User.findById(registeredUser._id);
-        console.log('Saved user verification status:', savedUser.isVerified);
         
         // Delete pending user
         await PendingUser.findByIdAndDelete(pendingUser._id);
@@ -163,7 +156,6 @@ module.exports.verifyEmail = async (req, res) => {
         res.redirect('/login');
         
     } catch (e) {
-        console.error('Verification error:', e);
         req.flash('error', 'Something went wrong during verification');
         res.redirect('/register');
     }
