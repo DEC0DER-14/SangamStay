@@ -6,6 +6,7 @@ const { reviewSchema } = require('./schemas');
 const rateLimit = require('express-rate-limit');
 const { requireJWT } = require('./middleware/auth');
 const User = require('./models/user');
+const PendingUser = require('./models/pendingUser');
 
 module.exports.isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated() && !req.jwtUser) {
@@ -111,18 +112,18 @@ module.exports.isVerified = async (req, res, next) => {
 module.exports.checkVerificationToken = async (req, res, next) => {
     try {
         const { token } = req.params;
-        const user = await User.findOne({
+        const pendingUser = await PendingUser.findOne({
             verificationToken: token,
             verificationTokenExpires: { $gt: Date.now() }
         });
 
-        if (!user) {
-            req.flash('error', 'Verification link has expired. Please request a new one.');
-            return res.redirect('/login');
+        if (!pendingUser) {
+            req.flash('error', 'Verification link has expired. Please register again.');
+            return res.redirect('/register');
         }
         next();
     } catch (e) {
         req.flash('error', 'Invalid verification link');
-        res.redirect('/login');
+        res.redirect('/register');
     }
 }; 

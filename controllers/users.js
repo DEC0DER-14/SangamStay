@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const { generateToken } = require('../middleware/auth');
 const crypto = require('crypto');
 const { sendVerificationEmail } = require('../utils/email');
+const PendingUser = require('../models/pendingUser');
 
 module.exports.renderRegister = (req, res) => {
     res.render('users/register');
@@ -24,22 +25,22 @@ module.exports.register = async (req, res) => {
 
         // Create verification token
         const verificationToken = crypto.randomBytes(32).toString('hex');
-        const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-
-        const user = new User({
-            email,
+        
+        // Store in pending users
+        const pendingUser = new PendingUser({
             username,
+            email,
+            password, // Note: In production, you should hash this password
             verificationToken,
-            verificationTokenExpires,
-            isVerified: false
+            verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
         });
 
-        const registeredUser = await User.register(user, password);
+        await pendingUser.save();
         
         // Send verification email
         await sendVerificationEmail(email, verificationToken);
 
-        req.flash('success', 'Registration successful! Please check your email to verify your account.');
+        req.flash('success', 'Please check your email to verify your account.');
         res.redirect('/login');
     } catch (e) {
         req.flash('error', e.message);
@@ -118,46 +119,57 @@ module.exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.params;
         
-        const user = await User.findOne({
+        // Find pending user
+        const pendingUser = await PendingUser.findOne({
             verificationToken: token,
             verificationTokenExpires: { $gt: Date.now() }
         });
 
-        if (!user) {
-            req.flash('error', 'Invalid or expired verification token');
-            return res.redirect('/login');
+        if (!pendingUser) {
+            req.flash('error', 'Verification link is invalid or has expired');
+            return res.redirect('/register');
         }
 
-        user.isVerified = true;
-        user.verificationToken = undefined;
-        user.verificationTokenExpires = undefined;
-        await user.save();
+        // Create actual user
+        const user = new User({
+            username: pendingUser.username,
+            email: pendingUser.email,
+            isVerified: true
+        });
+
+        // Register user with passport
+        await User.register(user, pendingUser.password);
+        
+        // Delete pending user
+        await PendingUser.findByIdAndDelete(pendingUser._id);
 
         req.flash('success', 'Email verified successfully! You can now login.');
         res.redirect('/login');
     } catch (e) {
-        req.flash('error', 'Something went wrong');
-        res.redirect('/login');
+        req.flash('error', 'Something went wrong during verification');
+        res.redirect('/register');
     }
 };
 
 module.exports.resendVerification = async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await User.findOne({ email, isVerified: false });
         
-        if (!user) {
-            req.flash('error', 'No unverified account found with this email');
+        // Check pending verifications
+        const pendingUser = await PendingUser.findOne({ email });
+        
+        if (!pendingUser) {
+            req.flash('error', 'No pending verification found for this email');
             return res.redirect('/login');
         }
 
         // Create new verification token
-        user.verificationToken = crypto.randomBytes(32).toString('hex');
-        user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
-        await user.save();
+        pendingUser.verificationToken = crypto.randomBytes(32).toString('hex');
+        pendingUser.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+        await pendingUser.save();
 
-        // Send new verification email
-        await sendVerificationEmail(email, user.verificationToken);
+        // Resend verification email
+        await sendVerificationEmail(email, pendingUser.verificationToken);
 
         req.flash('success', 'Verification email has been resent');
         res.redirect('/login');
