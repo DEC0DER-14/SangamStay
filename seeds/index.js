@@ -9,11 +9,13 @@ if (process.env.NODE_ENV !== "production") {
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
-        console.log("Database Connected for Seeding!");
+        seedDB().then(() => {
+            mongoose.connection.close();
+        });
     })
     .catch(err => {
-        console.log("Seeding Connection Error!");
-        console.log(err);
+        console.error("MongoDB Connection Error:", err.message);
+        process.exit(1);
     });
 
 const sampleHotels = [
@@ -112,13 +114,8 @@ const seedDB = async () => {
 
             await hotel.save();
         }
-
-        console.log("Database seeded!");
     } catch (err) {
-        console.error("Seeding Error!", err);
-    } finally {
-        mongoose.connection.close();
+        console.error("Database seeding failed:", err.message);
+        process.exit(1);
     }
-};
-
-seedDB(); 
+}; 

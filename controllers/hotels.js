@@ -59,11 +59,9 @@ module.exports.createHotel = async (req, res) => {
         }
 
         await hotel.save();
-        console.log('Created hotel:', hotel);
         req.flash('success', 'Successfully added a new hotel!');
         res.redirect(`/hotels/${hotel._id}`);
     } catch (e) {
-        console.error('Error creating hotel:', e);
         req.flash('error', 'Error creating hotel');
         res.redirect('/hotels');
     }
@@ -161,7 +159,7 @@ module.exports.createBooking = async (req, res) => {
             req.flash('error', 'Please fill in all required fields');
             return res.render('hotels/book', { 
                 hotel,
-                formData: req.body // Pass form data back to the view
+                formData: req.body
             });
         }
         
@@ -222,7 +220,6 @@ module.exports.createBooking = async (req, res) => {
         req.flash('success', 'Thank you for your booking! Your reservation is confirmed.');
         res.redirect('/bookings');
     } catch (e) {
-        console.error('Booking error:', e);
         req.flash('error', 'Sorry, there was a problem with your booking. Please try again.');
         res.render('hotels/book', { 
             hotel: await Hotel.findById(req.params.id).populate('rooms'),
@@ -268,7 +265,6 @@ module.exports.showBookings = async (req, res) => {
             query: { search, sortBy } 
         });
     } catch (e) {
-        console.error('Error fetching bookings:', e);
         req.flash('error', 'Unable to load bookings');
         res.redirect('/hotels');
     }
@@ -276,21 +272,39 @@ module.exports.showBookings = async (req, res) => {
 
 // Add this helper function at the top of the file
 const updateHotelRoomCount = async (hotelId, oldRoomCount, newRoomCount) => {
-    const hotel = await Hotel.findById(hotelId);
-    if (hotel) {
-        // If booking is cancelled, add rooms back
-        if (newRoomCount === 0) {
-            hotel.availableRooms += oldRoomCount;
+    try {
+        const hotel = await Hotel.findById(hotelId);
+        if (!hotel) {
+            throw new Error('Hotel not found');
+        }
+
+        // Ensure we're working with valid numbers
+        const currentAvailable = parseInt(hotel.availableRooms) || 0;
+        const oldCount = parseInt(oldRoomCount) || 0;
+        const newCount = parseInt(newRoomCount) || 0;
+        const totalRooms = parseInt(hotel.totalRooms) || 0;
+
+        let updatedAvailableRooms;
+        // If booking is cancelled or completed, add rooms back
+        if (newCount === 0) {
+            updatedAvailableRooms = currentAvailable + oldCount;
         } else {
             // If booking is updated, adjust the difference
-            const roomDifference = oldRoomCount - newRoomCount;
-            hotel.availableRooms += roomDifference;
+            const roomDifference = oldCount - newCount;
+            updatedAvailableRooms = currentAvailable + roomDifference;
         }
+
+        // Ensure the value stays within valid bounds
+        updatedAvailableRooms = Math.max(0, Math.min(totalRooms, updatedAvailableRooms));
+        
+        hotel.availableRooms = updatedAvailableRooms;
         await hotel.save();
+    } catch (error) {
+        throw new Error(`Failed to update room count: ${error.message}`);
     }
 };
 
-// Add these new controller functions
+// Update the controller function
 module.exports.updateBookingStatus = async (req, res) => {
     try {
         const { bookingId } = req.params;
@@ -299,29 +313,40 @@ module.exports.updateBookingStatus = async (req, res) => {
         const booking = await Booking.findById(bookingId);
         if (!booking) {
             req.flash('error', 'Booking not found');
-            return res.redirect('/admin/dashboard');
+            return res.redirect('/admin/bookings');
         }
 
-        const oldRoomCount = booking.numberOfRooms;
+        const oldRoomCount = parseInt(booking.numberOfRooms) || 0;
+        const oldStatus = booking.status;
         
-        // If cancelling booking, update hotel room count
-        if (status === 'cancelled' && booking.status !== 'cancelled') {
-            await updateHotelRoomCount(booking.hotelId, oldRoomCount, 0);
-        }
-        // If reactivating a cancelled booking, decrease available rooms
-        else if (booking.status === 'cancelled' && status === 'confirmed') {
-            await updateHotelRoomCount(booking.hotelId, 0, oldRoomCount);
-        }
+        // Update room count when:
+        // 1. Marking as completed or cancelled
+        // 2. Reactivating a cancelled/completed booking
+        try {
+            if (status === 'completed' || status === 'cancelled') {
+                await updateHotelRoomCount(booking.hotelId, oldRoomCount, 0);
+            } else if (status === 'confirmed' && (oldStatus === 'cancelled' || oldStatus === 'completed')) {
+                await updateHotelRoomCount(booking.hotelId, 0, oldRoomCount);
+            }
 
-        booking.status = status;
-        await booking.save();
+            // If marking as completed, update checkout details
+            if (status === 'completed' && booking.status !== 'completed') {
+                booking.isCheckedOut = true;
+                booking.actualCheckOutTime = new Date();
+            }
 
-        req.flash('success', 'Booking status updated successfully');
-        res.redirect('/admin/dashboard');
+            booking.status = status;
+            await booking.save();
+
+            req.flash('success', 'Booking status updated successfully');
+            res.redirect('/admin/bookings');
+        } catch (error) {
+            req.flash('error', `Error updating room availability: ${error.message}`);
+            res.redirect('/admin/bookings');
+        }
     } catch (e) {
-        console.error('Error updating booking:', e);
         req.flash('error', 'Error updating booking status');
-        res.redirect('/admin/dashboard');
+        res.redirect('/admin/bookings');
     }
 };
 
@@ -353,7 +378,6 @@ module.exports.updateBookingDetails = async (req, res) => {
         req.flash('success', 'Booking updated successfully');
         res.redirect('/admin/dashboard');
     } catch (e) {
-        console.error('Error updating booking:', e);
         req.flash('error', 'Error updating booking details');
         res.redirect('/admin/dashboard');
     }

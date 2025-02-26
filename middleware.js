@@ -101,8 +101,6 @@ module.exports.deleteHotel = async (req, res) => {
 };
 
 module.exports.isVerified = async (req, res, next) => {
-    console.log('User verification status:', req.user.isVerified);
-    console.log('Full user object:', req.user);
     if (!req.user.isVerified) {
         req.logout((err) => {
             if (err) {
