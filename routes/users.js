@@ -29,13 +29,9 @@ router.get('/auth/google/callback',
         // Manual login to ensure session is created
         req.login(req.user, (err) => {
             if (err) {
-                console.error('Login error:', err);
                 req.flash('error', 'Failed to login after Google authentication');
                 return res.redirect('/login');
             }
-            
-            // Log successful authentication
-            console.log('Successfully authenticated user:', req.user.email);
             
             // Successful authentication
             const redirectTo = req.session.returnTo || '/hotels';
@@ -44,7 +40,6 @@ router.get('/auth/google/callback',
             // Save session before redirect
             req.session.save((err) => {
                 if (err) {
-                    console.error('Session save error:', err);
                     req.flash('error', 'Failed to save session');
                     return res.redirect('/login');
                 }

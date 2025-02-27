@@ -87,7 +87,37 @@ app.use(helmet({
 
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new localStrategy(User.authenticate()));
+
+// Custom Local Strategy to handle both username and email
+passport.use(new localStrategy({
+    usernameField: 'username', // this is the name of the form field
+    passwordField: 'password'
+}, async (username, password, done) => {
+    try {
+        // Try to find user by username or email
+        const user = await User.findOne({
+            $or: [
+                { username: username },
+                { email: username }
+            ]
+        });
+        
+        if (!user) {
+            return done(null, false, { message: 'Incorrect username/email or password' });
+        }
+
+        // Use the passport-local-mongoose authenticate method
+        const isValid = await user.authenticate(password);
+        
+        if (!isValid) {
+            return done(null, false, { message: 'Incorrect username/email or password' });
+        }
+
+        return done(null, user);
+    } catch (err) {
+        return done(err);
+    }
+}));
 
 app.use((req, res, next) => {
     res.locals.currentUser = req.user;
