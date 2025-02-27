@@ -1,7 +1,15 @@
 <% layout('layouts/boilerplate') %>
+
+<style>
+    .hotels-main-heading {
+        color: #ffffff; /* Same color as All Hotels heading */
+        font-weight: bold;
+    }
+</style>
+
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>My Bookings</h1>
+        <h1 class="hotels-main-heading">My Bookings</h1>
         <a href="/hotels" class="btn btn-primary">Book Another Stay</a>
         <% if(currentUser && currentUser.role === 'admin') { %>
             <form action="/bookings/clear?_method=DELETE" method="POST" 
