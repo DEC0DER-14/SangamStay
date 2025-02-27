@@ -31,9 +31,20 @@ const UserSchema = new Schema({
     verificationToken: String,
     verificationTokenExpires: Date,
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+    googleId: String,
+    displayName: String,
+    firstName: String,
+    lastName: String,
+    profilePicture: String,
+    hasPassword: {
+        type: Boolean,
+        default: false
+    }
 });
 
-UserSchema.plugin(passportLocalMongoose);
+UserSchema.plugin(passportLocalMongoose, {
+    usernameField: 'email'
+});
 
 module.exports = mongoose.model('User', UserSchema); 

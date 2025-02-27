@@ -25,6 +25,9 @@ const Room = require('./models/room');
 const adminRoutes = require('./routes/admin');
 const bookingRoutes = require('./routes/bookings');
 
+// Import Google OAuth configuration
+require('./config/passport-google');
+
 // Connect to MongoDB using environment variable
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
@@ -53,26 +56,30 @@ const sessionConfig = {
     saveUninitialized: true,
     cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Only send cookies over HTTPS in production
+        // Only use secure cookies in production
+        secure: false, // Set to true in production
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
         maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: 'strict'
+        sameSite: 'lax' // Changed from strict to lax for OAuth
     }
 };
 
 app.use(session(sessionConfig));
 app.use(flash());
 
-// Security middleware
+// Update CSP for Google OAuth
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            defaultSrc: ["'self'", "https:", "http:", "data:", "blob:"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://apis.google.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
+            connectSrc: ["'self'", "https://accounts.google.com", "https://www.googleapis.com"],
+            frameSrc: ["'self'", "https://accounts.google.com", "https://apis.google.com"],
+            formAction: ["'self'", "https://accounts.google.com"],
+            objectSrc: ["'none'"],
         }
     },
     crossOriginEmbedderPolicy: false
@@ -81,8 +88,6 @@ app.use(helmet({
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new localStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
     res.locals.currentUser = req.user;

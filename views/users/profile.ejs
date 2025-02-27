@@ -7,9 +7,13 @@
                 <!-- Profile Header -->
                 <div class="profile-header text-center mb-5">
                     <div class="profile-avatar mb-3">
-                        <span class="avatar-letter"><%= user.username.charAt(0).toUpperCase() %></span>
+                        <% if (user.profilePicture) { %>
+                            <img src="<%= user.profilePicture %>" alt="Profile Picture" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                        <% } else { %>
+                            <span class="avatar-letter"><%= (user.displayName || user.email || 'U').charAt(0).toUpperCase() %></span>
+                        <% } %>
                     </div>
-                    <h1 class="profile-name mb-2"><%= user.username %></h1>
+                    <h1 class="profile-name mb-2"><%= user.displayName || user.username || user.email %></h1>
                     <p class="profile-email text-muted">
                         <i class="fas fa-envelope me-2"></i><%= user.email %>
                     </p>

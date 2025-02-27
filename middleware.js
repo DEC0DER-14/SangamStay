@@ -9,7 +9,12 @@ const User = require('./models/user');
 const PendingUser = require('./models/pendingUser');
 
 module.exports.isLoggedIn = (req, res, next) => {
+    console.log('Session:', req.session);
+    console.log('User:', req.user);
+    console.log('Is Authenticated:', req.isAuthenticated());
+    
     if (!req.isAuthenticated() && !req.jwtUser) {
+        // Store the full URL they were trying to access
         req.session.returnTo = req.originalUrl;
         req.flash('error', 'You must be signed in first!');
         return res.redirect('/login');
