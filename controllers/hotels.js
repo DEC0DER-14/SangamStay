@@ -35,6 +35,10 @@ module.exports.createHotel = async (req, res) => {
         const hotel = new Hotel(req.body.hotel);
         hotel.author = req.user._id;
         
+        // Set initial total rooms and available rooms
+        hotel.totalRooms = 20; // Default total rooms
+        hotel.availableRooms = hotel.totalRooms; // Initially all rooms are available
+        
         // Create default rooms for the hotel
         const defaultRooms = [
             {
@@ -280,25 +284,28 @@ const updateHotelRoomCount = async (hotelId, oldRoomCount, newRoomCount) => {
 
         // Ensure we're working with valid numbers
         const currentAvailable = parseInt(hotel.availableRooms) || 0;
+        const totalRooms = parseInt(hotel.totalRooms) || 20; // Default to 20 if not set
         const oldCount = parseInt(oldRoomCount) || 0;
         const newCount = parseInt(newRoomCount) || 0;
-        const totalRooms = parseInt(hotel.totalRooms) || 0;
 
         let updatedAvailableRooms;
-        // If booking is cancelled or completed, add rooms back
-        if (newCount === 0) {
+
+        if (status === 'confirmed') {
+            // When confirming a booking, subtract rooms
+            updatedAvailableRooms = currentAvailable - newCount;
+        } else if (status === 'cancelled' || status === 'completed') {
+            // When cancelling/completing, add rooms back
             updatedAvailableRooms = currentAvailable + oldCount;
-        } else {
-            // If booking is updated, adjust the difference
-            const roomDifference = oldCount - newCount;
-            updatedAvailableRooms = currentAvailable + roomDifference;
         }
 
         // Ensure the value stays within valid bounds
         updatedAvailableRooms = Math.max(0, Math.min(totalRooms, updatedAvailableRooms));
         
+        // Update the hotel
         hotel.availableRooms = updatedAvailableRooms;
         await hotel.save();
+        
+        return hotel;
     } catch (error) {
         throw new Error(`Failed to update room count: ${error.message}`);
     }
@@ -310,7 +317,7 @@ module.exports.updateBookingStatus = async (req, res) => {
         const { bookingId } = req.params;
         const { status } = req.body;
 
-        const booking = await Booking.findById(bookingId);
+        const booking = await Booking.findById(bookingId).populate('hotelId');
         if (!booking) {
             req.flash('error', 'Booking not found');
             return res.redirect('/admin/bookings');
@@ -319,14 +326,35 @@ module.exports.updateBookingStatus = async (req, res) => {
         const oldRoomCount = parseInt(booking.numberOfRooms) || 0;
         const oldStatus = booking.status;
         
-        // Update room count when:
-        // 1. Marking as completed or cancelled
-        // 2. Reactivating a cancelled/completed booking
         try {
-            if (status === 'completed' || status === 'cancelled') {
-                await updateHotelRoomCount(booking.hotelId, oldRoomCount, 0);
+            // Update room count based on status change
+            if ((status === 'completed' || status === 'cancelled') && oldStatus === 'confirmed') {
+                // When cancelling or completing a confirmed booking, add rooms back
+                const hotel = await Hotel.findById(booking.hotelId._id);
+                if (hotel) {
+                    const currentAvailable = parseInt(hotel.availableRooms) || 0;
+                    const totalRooms = parseInt(hotel.totalRooms) || 20;
+                    
+                    // Calculate new available rooms
+                    const newAvailable = currentAvailable + oldRoomCount;
+                    
+                    // Ensure it doesn't exceed total rooms
+                    hotel.availableRooms = Math.min(totalRooms, newAvailable);
+                    await hotel.save();
+                }
             } else if (status === 'confirmed' && (oldStatus === 'cancelled' || oldStatus === 'completed')) {
-                await updateHotelRoomCount(booking.hotelId, 0, oldRoomCount);
+                // When reactivating a cancelled/completed booking, subtract rooms
+                const hotel = await Hotel.findById(booking.hotelId._id);
+                if (hotel) {
+                    const currentAvailable = parseInt(hotel.availableRooms) || 0;
+                    
+                    // Calculate new available rooms
+                    const newAvailable = currentAvailable - oldRoomCount;
+                    
+                    // Ensure it doesn't go below 0
+                    hotel.availableRooms = Math.max(0, newAvailable);
+                    await hotel.save();
+                }
             }
 
             // If marking as completed, update checkout details
@@ -341,10 +369,12 @@ module.exports.updateBookingStatus = async (req, res) => {
             req.flash('success', 'Booking status updated successfully');
             res.redirect('/admin/bookings');
         } catch (error) {
-            req.flash('error', `Error updating room availability: ${error.message}`);
+            console.error('Error updating room count:', error);
+            req.flash('error', 'Error updating room availability. Please try again.');
             res.redirect('/admin/bookings');
         }
     } catch (e) {
+        console.error('Error in updateBookingStatus:', e);
         req.flash('error', 'Error updating booking status');
         res.redirect('/admin/bookings');
     }
