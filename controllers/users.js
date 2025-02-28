@@ -95,9 +95,16 @@ module.exports.updateProfile = async (req, res) => {
     try {
         const { username, email, phone } = req.body;
         
+        // Check if username already exists for another user
+        const existingUsername = await User.findOne({ username, _id: { $ne: req.user._id } });
+        if (existingUsername) {
+            req.flash('error', 'Username already taken');
+            return res.redirect('/profile/edit');
+        }
+
         // Check if email already exists for another user
-        const existingUser = await User.findOne({ email, _id: { $ne: req.user._id } });
-        if (existingUser) {
+        const existingEmail = await User.findOne({ email, _id: { $ne: req.user._id } });
+        if (existingEmail) {
             req.flash('error', 'That email is already in use');
             return res.redirect('/profile/edit');
         }
@@ -136,9 +143,15 @@ module.exports.updateProfile = async (req, res) => {
             });
         }
     } catch (error) {
-        console.error('Profile update error:', error);
-        req.flash('error', 'Error updating profile');
-        res.redirect('/profile');
+        // Simplified error handling
+        if (error.code === 11000 && error.keyPattern && error.keyPattern.username) {
+            req.flash('error', 'Username already taken');
+        } else if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+            req.flash('error', 'That email is already in use');
+        } else {
+            req.flash('error', 'Unable to update profile');
+        }
+        res.redirect('/profile/edit');
     }
 }
 
