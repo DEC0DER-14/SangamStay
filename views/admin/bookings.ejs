@@ -47,6 +47,7 @@
                 <tr>
                     <th>Booking ID</th>
                     <th>Guest</th>
+                    <th>Contact</th>
                     <th>Hotel</th>
                     <th>Room</th>
                     <th>Check-in</th>
@@ -63,6 +64,18 @@
                         <td>
                             <%= booking.guestDetails.name %><br>
                             <small class="text-muted"><%= booking.guestDetails.email %></small>
+                        </td>
+                        <td>
+                            <% if(booking.guestDetails.phone) { %>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2"><%= booking.guestDetails.phone %></span>
+                                    <a href="tel:<%= booking.guestDetails.phone %>" class="btn btn-sm btn-success">
+                                        <i class="fas fa-phone"></i>
+                                    </a>
+                                </div>
+                            <% } else { %>
+                                <span class="text-muted">Not provided</span>
+                            <% } %>
                         </td>
                         <td><%= booking.hotelId ? booking.hotelId.name : 'N/A' %></td>
                         <td><%= booking.roomId ? booking.roomId.roomType : 'N/A' %></td>
