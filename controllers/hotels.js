@@ -194,7 +194,7 @@ module.exports.createBooking = async (req, res) => {
         // Calculate total amount
         const totalAmount = selectedRoom.pricePerNight * numberOfRooms * numberOfNights;
 
-        // Create new booking
+        // Create new booking with pending status
         const booking = new Booking({
             userId: req.user._id,
             hotelId: hotel._id,
@@ -209,20 +209,17 @@ module.exports.createBooking = async (req, res) => {
             guestDetails,
             specialRequests,
             totalAmount,
-            status: 'confirmed'
+            status: 'pending' // Set initial status as pending
         });
 
-        // Update available rooms count
-        hotel.availableRooms = Math.max(0, hotel.availableRooms - numberOfRooms);
-        
-        // Save both the booking and updated hotel
-        await Promise.all([
-            booking.save(),
-            hotel.save()
-        ]);
+        await booking.save();
 
-        req.flash('success', 'Thank you for your booking! Your reservation is confirmed.');
-        res.redirect('/bookings');
+        // Render the payment page
+        res.render('payment/checkout', {
+            booking,
+            hotel,
+            razorpayKeyId: process.env.RAZORPAY_KEY_ID
+        });
     } catch (e) {
         req.flash('error', 'Sorry, there was a problem with your booking. Please try again.');
         res.render('hotels/book', { 

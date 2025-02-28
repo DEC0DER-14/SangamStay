@@ -24,6 +24,7 @@ const helmet = require('helmet');
 const Room = require('./models/room');
 const adminRoutes = require('./routes/admin');
 const bookingRoutes = require('./routes/bookings');
+const paymentRoutes = require('./routes/payment');
 
 // Import Google OAuth configuration
 require('./config/passport-google');
@@ -67,19 +68,56 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(flash());
 
-// Update CSP for Google OAuth
+// Update CSP for Google OAuth and Razorpay
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc: ["'self'", "https:", "http:", "data:", "blob:"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://apis.google.com"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
-            connectSrc: ["'self'", "https://accounts.google.com", "https://www.googleapis.com"],
-            frameSrc: ["'self'", "https://accounts.google.com", "https://apis.google.com"],
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "'unsafe-eval'",
+                "https://checkout.razorpay.com",
+                "https://*.razorpay.com",
+                "https://cdn.jsdelivr.net",
+                "https://accounts.google.com",
+                "https://apis.google.com"
+            ],
+            connectSrc: [
+                "'self'",
+                "https://api.razorpay.com",
+                "https://*.razorpay.com",
+                "https://accounts.google.com",
+                "https://www.googleapis.com"
+            ],
+            frameSrc: [
+                "'self'",
+                "https://api.razorpay.com",
+                "https://*.razorpay.com",
+                "https://accounts.google.com",
+                "https://apis.google.com"
+            ],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://cdn.jsdelivr.net",
+                "https://fonts.googleapis.com",
+                "https://cdnjs.cloudflare.com"
+            ],
+            fontSrc: [
+                "'self'",
+                "https://fonts.gstatic.com",
+                "https://cdnjs.cloudflare.com"
+            ],
+            imgSrc: [
+                "'self'",
+                "data:",
+                "https:",
+                "http:",
+                "blob:"
+            ],
             formAction: ["'self'", "https://accounts.google.com"],
-            objectSrc: ["'none'"],
+            objectSrc: ["'none'"]
         }
     },
     crossOriginEmbedderPolicy: false
@@ -139,6 +177,7 @@ app.use('/', userRoutes);
 app.use('/api', apiRoutes);
 app.use('/admin', adminRoutes);
 app.use('/bookings', bookingRoutes);
+app.use('/payment', paymentRoutes);
 
 app.get("/", (req, res) => {
     res.render("home");
