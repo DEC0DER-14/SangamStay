@@ -93,7 +93,7 @@ module.exports.renderEditProfile = (req, res) => {
 
 module.exports.updateProfile = async (req, res) => {
     try {
-        const { username, email, phone } = req.body;
+        const { username, phone } = req.body;
         
         // Check if username already exists for another user
         const existingUsername = await User.findOne({ username, _id: { $ne: req.user._id } });
@@ -102,52 +102,30 @@ module.exports.updateProfile = async (req, res) => {
             return res.redirect('/profile/edit');
         }
 
-        // Check if email already exists for another user
-        const existingEmail = await User.findOne({ email, _id: { $ne: req.user._id } });
-        if (existingEmail) {
-            req.flash('error', 'That email is already in use');
-            return res.redirect('/profile/edit');
-        }
-
         // Update user with new information
         const updatedUser = await User.findByIdAndUpdate(
             req.user._id,
             {
                 username,
-                email,
                 phone,
                 displayName: username // Update displayName when username changes
             },
             { new: true, runValidators: true }
         );
 
-        // Log out the user if email changed (optional security measure)
-        if (email !== req.user.email) {
-            req.logout((err) => {
-                if (err) {
-                    req.flash('error', 'Error during logout');
-                    return res.redirect('/profile');
-                }
-                req.flash('success', 'Profile updated successfully. Please login with your new email');
-                return res.redirect('/login');
-            });
-        } else {
-            // Update the session with the new user information
-            req.login(updatedUser, (err) => {
-                if (err) {
-                    req.flash('error', 'There was an issue updating your session');
-                    return res.redirect('/profile');
-                }
-                req.flash('success', 'Profile updated successfully!');
-                res.redirect('/profile');
-            });
-        }
+        // Update the session with the new user information
+        req.login(updatedUser, (err) => {
+            if (err) {
+                req.flash('error', 'There was an issue updating your session');
+                return res.redirect('/profile');
+            }
+            req.flash('success', 'Profile updated successfully!');
+            res.redirect('/profile');
+        });
     } catch (error) {
         // Simplified error handling
         if (error.code === 11000 && error.keyPattern && error.keyPattern.username) {
             req.flash('error', 'Username already taken');
-        } else if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
-            req.flash('error', 'That email is already in use');
         } else {
             req.flash('error', 'Unable to update profile');
         }
@@ -249,17 +227,32 @@ module.exports.changePassword = async (req, res) => {
     try {
         const { oldPassword, newPassword, confirmPassword } = req.body;
         
+        // Check if new password meets requirements
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (!passwordRegex.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 8 characters long and contain both letters and numbers'
+            });
+        }
+        
         // Check if new password and confirm password match
         if (newPassword !== confirmPassword) {
-            req.flash('error', 'New passwords do not match');
-            return res.redirect('/change-password');
+            return res.status(400).json({
+                success: false,
+                message: 'New passwords do not match'
+            });
         }
 
         const user = await User.findById(req.user._id);
 
         // For Google users who haven't set a password yet
         if (user.googleId && !user.hasPassword) {
-            return res.redirect('/set-password');
+            return res.status(400).json({
+                success: false,
+                message: 'Please set your initial password first',
+                redirect: '/set-password'
+            });
         }
 
         // Change password using passport-local-mongoose method
@@ -274,14 +267,30 @@ module.exports.changePassword = async (req, res) => {
         // Log out of all sessions
         req.logout((err) => {
             if (err) {
-                return next(err);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error during logout'
+                });
             }
-            req.flash('success', 'Password changed successfully. Please log in with your new password');
-            res.redirect('/login');
+            res.status(200).json({
+                success: true,
+                message: 'Password changed successfully. Please log in with your new password',
+                redirect: '/login'
+            });
         });
     } catch (e) {
-        req.flash('error', 'Current password is incorrect');
-        res.redirect('/change-password');
+        // More specific error messages
+        if (e.name === 'IncorrectPasswordError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Current password is incorrect'
+            });
+        } else {
+            return res.status(500).json({
+                success: false,
+                message: 'Error changing password. Please try again.'
+            });
+        }
     }
 }
 
