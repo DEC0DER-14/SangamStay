@@ -5,7 +5,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title mb-0">Complete Your Payment</h3>
+                    <h3 class="card-title mb-0">Complete Your Booking</h3>
                 </div>
                 <div class="card-body">
                     <div class="booking-summary mb-4">
@@ -25,138 +25,33 @@
                         </div>
                     </div>
                     
-                    <div class="text-center">
-                        <div id="error-message" class="alert alert-danger mb-3" style="display: none;"></div>
-                        <button id="payButton" class="btn btn-primary btn-lg">Pay Now</button>
-                        <div id="payment-processing" class="mt-3" style="display: none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Processing payment...</span>
+                    <div class="payment-options">
+                        <h4 class="mb-4">Select Payment Method</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Cash on Delivery</h5>
+                                        <p class="card-text">Pay at the hotel during check-in</p>
+                                        <form action="/payment/cod/<%= booking._id %>" method="POST">
+                                            <button type="submit" class="btn btn-primary">Confirm Booking with COD</button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="mt-2">Processing your payment...</p>
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Online Payment</h5>
+                                        <p class="card-text">This payment method will be available soon!</p>
+                                        <button class="btn btn-secondary" disabled>Coming Soon</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-function initializePayment() {
-    const payButton = document.getElementById('payButton');
-    const processingDiv = document.getElementById('payment-processing');
-    const errorDiv = document.getElementById('error-message');
-
-    payButton.onclick = async function() {
-        try {
-            // Disable button and show processing
-            payButton.disabled = true;
-            processingDiv.style.display = 'block';
-            errorDiv.style.display = 'none';
-
-            // Create order
-            const response = await fetch(`/payment/create-order/<%= booking._id %>`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Could not create order');
-            }
-
-            // Configure Razorpay options
-            const options = {
-                key: '<%= razorpayKeyId %>',
-                amount: data.amount,
-                currency: data.currency,
-                order_id: data.orderId,
-                name: 'SangamStay',
-                description: 'Hotel Booking Payment',
-                handler: async function(response) {
-                    try {
-                        processingDiv.innerHTML = '<p>Verifying payment...</p>';
-                        
-                        // Verify payment
-                        const verifyResponse = await fetch(`/payment/verify/<%= booking._id %>`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_signature: response.razorpay_signature
-                            })
-                        });
-                        
-                        const verifyData = await verifyResponse.json();
-                        
-                        if (verifyData.success) {
-                            processingDiv.innerHTML = '<p class="text-success">Payment successful! Redirecting...</p>';
-                            setTimeout(() => {
-                                window.location.href = '/bookings';
-                            }, 1500);
-                        } else {
-                            throw new Error(verifyData.error || 'Payment verification failed');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        errorDiv.textContent = 'Payment verification failed. Please contact support if amount was deducted.';
-                        errorDiv.style.display = 'block';
-                        processingDiv.style.display = 'none';
-                        payButton.disabled = false;
-                    }
-                },
-                prefill: {
-                    name: '<%= booking.guestDetails.name %>',
-                    email: '<%= booking.guestDetails.email %>',
-                    contact: '<%= booking.guestDetails.phone %>'
-                },
-                theme: {
-                    color: '#007bff'
-                },
-                modal: {
-                    ondismiss: function() {
-                        payButton.disabled = false;
-                        processingDiv.style.display = 'none';
-                    }
-                }
-            };
-
-            // Initialize Razorpay
-            const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', function (response) {
-                errorDiv.textContent = 'Payment failed. Please try again.';
-                errorDiv.style.display = 'block';
-                processingDiv.style.display = 'none';
-                payButton.disabled = false;
-            });
-            rzp.open();
-        } catch (error) {
-            console.error('Error:', error);
-            errorDiv.textContent = error.message || 'Could not process payment. Please try again.';
-            errorDiv.style.display = 'block';
-            processingDiv.style.display = 'none';
-            payButton.disabled = false;
-        }
-    };
-}
-
-// Load Razorpay script dynamically
-const script = document.createElement('script');
-script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-script.async = true;
-script.onload = function() {
-    initializePayment();
-};
-script.onerror = function() {
-    const errorDiv = document.getElementById('error-message');
-    errorDiv.textContent = 'Failed to load payment system. Please refresh the page.';
-    errorDiv.style.display = 'block';
-    document.getElementById('payButton').disabled = true;
-};
-document.head.appendChild(script);
-</script> 
+</div> 

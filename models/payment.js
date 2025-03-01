@@ -12,7 +12,13 @@ const paymentSchema = new Schema({
     },
     amount: Number,
     paymentStatus: String,
-    transactionId: String
+    paymentMethod: {
+        type: String,
+        enum: ['COD', 'online'],
+        default: 'COD'
+    },
+    transactionId: String,
+    orderId: String
 });
 
 module.exports = mongoose.model('Payment', paymentSchema); 
