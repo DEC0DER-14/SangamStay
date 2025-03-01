@@ -122,21 +122,6 @@
         font-size: 0.9rem;
     }
     
-    .hotel-amenities {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 0.8rem;
-    }
-    
-    .amenity-badge {
-        background: #f8f9fa;
-        padding: 0.3rem 0.6rem;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        color: #34495e;
-    }
-    
     .hotel-footer {
         display: flex;
         justify-content: space-between;
@@ -232,31 +217,10 @@
                             <p class="hotel-location">
                                 <i class="fas fa-map-marker-alt"></i>
                                 <%= hotel.location %>
+                                <span class="ms-2 badge bg-secondary">
+                                    <i class="fas fa-map-pin me-1"></i><%= hotel.pincode %>
+                                </span>
                             </p>
-                            
-                            <div class="hotel-amenities">
-                                <% if(hotel.amenities && hotel.amenities.length > 0) { %>
-                                    <% hotel.amenities.slice(0, 3).forEach(amenity => { %>
-                                        <span class="amenity-badge">
-                                            <% if(amenity === 'WiFi') { %>
-                                                <i class="fas fa-wifi"></i>
-                                            <% } else if(amenity === 'Pool') { %>
-                                                <i class="fas fa-swimming-pool"></i>
-                                            <% } else if(amenity === 'Spa') { %>
-                                                <i class="fas fa-spa"></i>
-                                            <% } else if(amenity === 'Restaurant') { %>
-                                                <i class="fas fa-utensils"></i>
-                                            <% } else if(amenity === 'Parking') { %>
-                                                <i class="fas fa-parking"></i>
-                                            <% } %>
-                                            <%= amenity %>
-                                        </span>
-                                    <% }) %>
-                                    <% if(hotel.amenities.length > 3) { %>
-                                        <span class="amenity-badge">+<%= hotel.amenities.length - 3 %> more</span>
-                                    <% } %>
-                                <% } %>
-                            </div>
                             
                             <div class="hotel-footer">
                                 <div class="rooms-available">

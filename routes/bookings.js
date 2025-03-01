@@ -28,7 +28,6 @@ router.get('/', isLoggedIn, async (req, res) => {
 
         let bookings = await Booking.find(query)
             .populate('hotelId')
-            .populate('roomId')
             .sort({ checkInDate: 1 }); // Always sort by check-in date
 
         res.render('bookings/index', { 

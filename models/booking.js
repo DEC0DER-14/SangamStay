@@ -12,11 +12,6 @@ const bookingSchema = new Schema({
         ref: 'Hotel',
         required: true
     },
-    roomId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Room',
-        required: true
-    },
     checkInDate: {
         type: Date,
         required: true
@@ -48,27 +43,58 @@ const bookingSchema = new Schema({
     numberOfGuests: {
         type: Number,
         required: true,
-        min: 1
+        min: 1,
+        validate: {
+            validator: function(value) {
+                return value <= (this.numberOfRooms * 2);
+            },
+            message: props => `Number of guests (${props.value}) exceeds maximum capacity (${props.value} guests for ${Math.ceil(props.value/2)} rooms). Maximum 2 guests per room allowed.`
+        }
     },
     guestDetails: {
-        name: String,
-        email: String,
-        phone: String
+        name: {
+            type: String,
+            required: true
+        },
+        email: {
+            type: String,
+            required: true
+        },
+        phone: {
+            type: String,
+            required: true
+        }
     },
     specialRequests: String,
     totalAmount: {
         type: Number,
-        required: true
+        required: true,
+        min: 0
     },
     status: {
         type: String,
-        enum: ['pending', 'confirmed', 'cancelled'],
+        enum: ['pending', 'confirmed', 'cancelled', 'completed'],
         default: 'pending'
+    },
+    isCheckedOut: {
+        type: Boolean,
+        default: false
+    },
+    actualCheckOutTime: {
+        type: Date
     },
     createdAt: {
         type: Date,
         default: Date.now
     }
+});
+
+// Add a pre-save hook to validate number of guests
+bookingSchema.pre('save', function(next) {
+    if (this.numberOfGuests > this.numberOfRooms * 2) {
+        next(new Error(`Maximum 2 guests per room allowed. You have selected ${this.numberOfGuests} guests for ${this.numberOfRooms} rooms.`));
+    }
+    next();
 });
 
 module.exports = mongoose.model('Booking', bookingSchema); 

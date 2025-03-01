@@ -12,6 +12,12 @@
                 <input class="form-control" type="text" id="location" name="hotel[location]" required>
             </div>
             <div class="mb-3">
+                <label class="form-label text-dark" for="pincode">Pincode</label>
+                <input class="form-control" type="text" id="pincode" name="hotel[pincode]" 
+                       pattern="[0-9]{6}" title="Please enter a valid 6-digit pincode" required>
+                <div class="form-text">Enter a valid 6-digit pincode</div>
+            </div>
+            <div class="mb-3">
                 <label class="form-label" for="price">Price per night</label>
                 <input class="form-control <%= locals.error && locals.error.includes('Price cannot be negative') ? 'is-invalid' : '' %>" 
                        type="number" id="price" name="hotel[price]" min="0" required>
@@ -26,33 +32,68 @@
                 <textarea class="form-control" type="text" id="description" name="hotel[description]" required></textarea>
             </div>
             <div class="mb-3">
-                <label class="form-label text-dark">Amenities</label>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="WiFi" id="wifi">
-                    <label class="form-check-label text-dark" for="wifi">WiFi</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Pool" id="pool">
-                    <label class="form-check-label text-dark" for="pool">Pool</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Spa" id="spa">
-                    <label class="form-check-label text-dark" for="spa">Spa</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Restaurant" id="restaurant">
-                    <label class="form-check-label text-dark" for="restaurant">Restaurant</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="hotel[amenities][]" value="Parking" id="parking">
-                    <label class="form-check-label text-dark" for="parking">Parking</label>
+                <label class="form-label text-dark">Facilities</label>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="acRooms" name="hotel[facilities][]" value="AC Rooms">
+                            <label class="form-check-label" for="acRooms">
+                                <i class="fas fa-snowflake text-primary me-2"></i>AC Rooms
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="freeWifi" name="hotel[facilities][]" value="Free WiFi">
+                            <label class="form-check-label" for="freeWifi">
+                                <i class="fas fa-wifi text-primary me-2"></i>Free WiFi
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="parking" name="hotel[facilities][]" value="Parking Facility">
+                            <label class="form-check-label" for="parking">
+                                <i class="fas fa-parking text-primary me-2"></i>Parking Facility
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="elevator" name="hotel[facilities][]" value="Elevator">
+                            <label class="form-check-label" for="elevator">
+                                <i class="fas fa-elevator text-primary me-2"></i>Elevator
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="foodServices" name="hotel[facilities][]" value="Food Services (Chargeable)">
+                            <label class="form-check-label" for="foodServices">
+                                <i class="fas fa-utensils text-primary me-2"></i>Food Services
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="houseKeeping" name="hotel[facilities][]" value="Daily House Keeping">
+                            <label class="form-check-label" for="houseKeeping">
+                                <i class="fas fa-broom text-primary me-2"></i>House Keeping
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="mb-3">
                 <label class="form-label text-dark" for="availableRooms">Available Rooms</label>
-                <input class="form-control" type="number" id="availableRooms" name="hotel[availableRooms]" required>
+                <input class="form-control" type="number" id="availableRooms" name="hotel[availableRooms]" 
+                       min="0" value="10" required>
+                <div class="form-text">Enter the number of available rooms</div>
             </div>
-            <button class="btn btn-success">Add Hotel</button>
+            <div class="mb-3">
+                <button class="btn btn-primary">Add Hotel</button>
+                <a href="/hotels" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 </div> 

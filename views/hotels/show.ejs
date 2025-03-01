@@ -67,6 +67,35 @@
         font-size: 0.9rem;
         color: #2c3e50;
     }
+
+    .facilities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 1.2rem 0;
+    }
+    
+    .facility-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        font-size: 1rem;
+        color: #2c3e50;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .facility-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .facility-item i {
+        font-size: 1.1rem;
+        color: #3498db;
+    }
     
     .room-card {
         border: 1px solid #eee;
@@ -235,6 +264,41 @@
             padding: 1rem;
         }
     }
+
+    .price-summary {
+        border-top: 1px solid #eee;
+        padding-top: 1.5rem;
+    }
+
+    .price-badge {
+        background: #f8f9fa;
+        padding: 0.8rem 1.2rem;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .price-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .price-badge .room-type {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .price-badge .price {
+        color: #2ecc71;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .price-badge small {
+        font-size: 0.8rem;
+    }
 </style>
 
 <div class="hotel-details-container">
@@ -245,6 +309,9 @@
             <p class="hotel-location">
                 <i class="fas fa-map-marker-alt"></i>
                 <%= hotel.location %>
+                <span class="ms-2 badge bg-light text-dark">
+                    <i class="fas fa-map-pin me-1"></i><%= hotel.pincode %>
+                </span>
             </p>
         </div>
     </div>
@@ -262,28 +329,56 @@
                         <h4>About the Hotel</h4>
                         <p class="lead"><%= hotel.description %></p>
                     <% } %>
-                    
-                    <% if(hotel.amenities && hotel.amenities.length > 0) { %>
-                        <h4>Amenities</h4>
-                        <div class="amenities-grid">
-                            <% hotel.amenities.forEach(amenity => { %>
-                                <div class="amenity-item">
-                                    <% if(amenity === 'WiFi') { %>
-                                        <i class="fas fa-wifi"></i>
-                                    <% } else if(amenity === 'Pool') { %>
-                                        <i class="fas fa-swimming-pool"></i>
-                                    <% } else if(amenity === 'Spa') { %>
-                                        <i class="fas fa-spa"></i>
-                                    <% } else if(amenity === 'Restaurant') { %>
-                                        <i class="fas fa-utensils"></i>
-                                    <% } else if(amenity === 'Parking') { %>
-                                        <i class="fas fa-parking"></i>
-                                    <% } %>
-                                    <%= amenity %>
-                                </div>
-                            <% }) %>
+
+                    <% if(hotel.rooms && hotel.rooms.length > 0) { %>
+                        <div class="price-summary mt-4">
+                            <h5 class="mb-3">Room Pricing</h5>
+                            <div class="d-flex flex-wrap gap-3">
+                                <% hotel.rooms.forEach(room => { %>
+                                    <div class="price-badge">
+                                        <span class="room-type"><%= room.roomType %></span>
+                                        <span class="price">₹<%= room.pricePerNight %></span>
+                                        <small class="text-muted">/night</small>
+                                    </div>
+                                <% }) %>
+                            </div>
                         </div>
                     <% } %>
+                </div>
+
+                <!-- Facilities Section -->
+                <div class="content-card">
+                    <h4 class="mb-3">Facilities</h4>
+                    <div class="facilities-grid">
+                        <% if(hotel.facilities && hotel.facilities.length > 0) { %>
+                            <% hotel.facilities.forEach(facility => { %>
+                                <div class="facility-item">
+                                    <i class="fas <%= 
+                                        facility.includes('AC') ? 'fa-snowflake' : 
+                                        facility.includes('WiFi') ? 'fa-wifi' :
+                                        facility.includes('Parking') ? 'fa-parking' :
+                                        facility.includes('Elevator') ? 'fa-elevator' :
+                                        facility.includes('Food') ? 'fa-utensils' : 'fa-check'
+                                    %>"></i>
+                                    <span><%= facility %></span>
+                                </div>
+                            <% }) %>
+                            <% if (hotel.facilities.includes('Food Services (Chargeable)')) { %>
+                                <div class="facility-item">
+                                    <i class="fas fa-utensils facility-icon"></i>
+                                    <span>Food Services</span>
+                                </div>
+                            <% } %>
+                            <% if (hotel.facilities.includes('Daily House Keeping')) { %>
+                                <div class="facility-item">
+                                    <i class="fas fa-broom facility-icon"></i>
+                                    <span>House Keeping</span>
+                                </div>
+                            <% } %>
+                        <% } else { %>
+                            <p class="text-muted">No facilities listed for this hotel.</p>
+                        <% } %>
+                    </div>
                 </div>
 
                 <!-- Room Types -->

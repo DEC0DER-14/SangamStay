@@ -4,10 +4,11 @@ module.exports.hotelSchema = Joi.object({
     hotel: Joi.object({
         name: Joi.string().required(),
         location: Joi.string().required(),
+        pincode: Joi.string().length(6).pattern(/^[0-9]{6}$/).required(),
         price: Joi.number().required().min(0),
         description: Joi.string().required(),
-        amenities: Joi.array().items(Joi.string()).default([]),
-        availableRooms: Joi.number().required().min(0)
+        availableRooms: Joi.number().required().min(0),
+        facilities: Joi.array().items(Joi.string().valid('AC Rooms', 'Free WiFi', 'Parking Facility', 'Elevator', 'Food Services (Chargeable)', 'Daily House Keeping'))
     }).required()
 });
 

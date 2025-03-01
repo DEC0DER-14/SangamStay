@@ -27,101 +27,110 @@
                             <div class="col-md-6">
                                 <label class="form-label" for="checkInTime">Check-in Time</label>
                                 <input class="form-control" type="time" id="checkInTime" name="checkInTime" 
-                                       value="14:00" required>
+                                       value="<%= formData ? formData.checkInTime : '14:00' %>" required>
                                 <small class="text-muted">Standard check-in time is 2:00 PM</small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="checkOutTime">Check-out Time</label>
                                 <input class="form-control" type="time" id="checkOutTime" name="checkOutTime" 
-                                       value="11:00" required>
+                                       value="<%= formData ? formData.checkOutTime : '11:00' %>" required>
                                 <small class="text-muted">Standard check-out time is 11:00 AM</small>
                             </div>
                         </div>
 
-                        <!-- Room Selection -->
-                        <div class="mb-3">
-                            <label class="form-label" for="roomType">Select Room Type</label>
-                            <select class="form-select" id="roomType" name="roomType" required>
-                                <option value="">Select a room type...</option>
-                                <% hotel.rooms.forEach(room => { %>
-                                    <option value="<%= room._id %>" 
-                                            data-price="<%= room.pricePerNight %>"
-                                            data-capacity="<%= room.capacity %>"
-                                            <%= formData && formData.roomType === room._id.toString() ? 'selected' : '' %>>
-                                        <%= room.roomType %> - ₹<%= room.pricePerNight %> per night
-                                    </option>
-                                <% }) %>
-                            </select>
-                        </div>
-
-                        <!-- Guest Information -->
-                        <div class="mb-3">
-                            <h4>Guest Details</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="form-label" for="guestName">Guest Name</label>
-                                    <input class="form-control" type="text" id="guestName" 
-                                           name="guestDetails[name]" 
-                                           value="<%= formData ? formData.guestDetails.name : currentUser.username %>" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="guestPhone">Phone Number</label>
-                                    <input class="form-control" type="tel" id="guestPhone" 
-                                           name="guestDetails[phone]" 
-                                           value="<%= formData ? formData.guestDetails.phone : '' %>" required>
-                                </div>
-                            </div>
-                            <div class="mt-2">
-                                <label class="form-label" for="guestEmail">Email</label>
-                                <input class="form-control" type="email" id="guestEmail" 
-                                       name="guestDetails[email]" 
-                                       value="<%= formData ? formData.guestDetails.email : currentUser.email %>" required>
-                            </div>
-                        </div>
-
-                        <!-- Room and Guest Count -->
+                        <!-- Rooms and Guests -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label" for="numberOfRooms">Number of Rooms</label>
-                                <input class="form-control" type="number" id="numberOfRooms" 
-                                       name="numberOfRooms" min="1" 
-                                       value="<%= formData ? formData.numberOfRooms : 1 %>" required>
+                                <input class="form-control" type="number" id="numberOfRooms" name="numberOfRooms" 
+                                       value="<%= formData ? formData.numberOfRooms : 1 %>" 
+                                       min="1" max="<%= hotel.availableRooms %>" required>
+                                <small class="text-muted"><%= hotel.availableRooms %> rooms available</small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="numberOfGuests">Number of Guests</label>
-                                <input class="form-control" type="number" id="numberOfGuests" 
-                                       name="numberOfGuests" min="1" 
-                                       value="<%= formData ? formData.numberOfGuests : 1 %>" required>
-                                <small id="guestCapacityMessage" class="text-muted">Maximum 2 guests per room</small>
+                                <input class="form-control" type="number" id="numberOfGuests" name="numberOfGuests" 
+                                       value="<%= formData ? formData.numberOfGuests : 1 %>" 
+                                       min="1" required>
+                                <small class="text-muted">Maximum 2 guests per room</small>
+                            </div>
+                        </div>
+
+                        <!-- Guest Details -->
+                        <div class="mb-3">
+                            <h4>Guest Details</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="guestName">Name</label>
+                                    <input class="form-control" type="text" id="guestName" name="guestDetails[name]" 
+                                           value="<%= formData && formData.guestDetails ? formData.guestDetails.name : '' %>" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="guestEmail">Email</label>
+                                    <input class="form-control" type="email" id="guestEmail" name="guestDetails[email]" 
+                                           value="<%= formData && formData.guestDetails ? formData.guestDetails.email : '' %>" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="guestPhone">Phone</label>
+                                    <input class="form-control" type="tel" id="guestPhone" name="guestDetails[phone]" 
+                                           pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number"
+                                           value="<%= formData && formData.guestDetails ? formData.guestDetails.phone : '' %>" required>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Special Requests -->
                         <div class="mb-3">
                             <label class="form-label" for="specialRequests">Special Requests</label>
-                            <textarea class="form-control" id="specialRequests" name="specialRequests" 
-                                      rows="3" placeholder="Any special requests or preferences?"><%= formData ? formData.specialRequests : '' %></textarea>
+                            <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3"><%= formData ? formData.specialRequests : '' %></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Confirm Booking</button>
-                        <a href="/hotels/<%= hotel._id %>" class="btn btn-secondary">Cancel</a>
+                        <!-- Price Summary -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Price Summary</h5>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Price per night:</span>
+                                    <span>₹<%= hotel.price %></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Number of rooms:</span>
+                                    <span id="summaryRooms">1</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Number of nights:</span>
+                                    <span id="summaryNights">1</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Total Amount:</span>
+                                    <span id="totalAmount">₹<%= hotel.price %></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Proceed to Payment</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Booking Summary Card -->
+        <!-- Hotel Summary Sidebar -->
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Booking Summary</h5>
-                    <div class="booking-details">
-                        <p><strong>Room Rate:</strong> ₹<span id="roomRate">0</span> per night</p>
-                        <p><strong>Number of Rooms:</strong> <span id="roomCount">1</span></p>
-                        <p><strong>Number of Nights:</strong> <span id="nightCount">0</span></p>
-                        <hr>
-                        <p class="h5"><strong>Total Amount:</strong> ₹<span id="totalAmount">0</span></p>
-                    </div>
+                    <h4 class="card-title">Hotel Summary</h4>
+                    <p class="card-text">
+                        <strong><%= hotel.name %></strong><br>
+                        <i class="fas fa-map-marker-alt"></i> <%= hotel.location %><br>
+                        <i class="fas fa-map-pin"></i> <%= hotel.pincode %>
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-door-open"></i> <%= hotel.availableRooms %> rooms available
+                    </p>
+                    <% if(hotel.description) { %>
+                        <p class="card-text"><%= hotel.description %></p>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -129,64 +138,32 @@
 </div>
 
 <script>
-    const checkInDateInput = document.getElementById('checkInDate');
-    const checkOutDateInput = document.getElementById('checkOutDate');
-    const roomTypeSelect = document.getElementById('roomType');
+    const pricePerNight = parseInt('<%= hotel.price %>');
     const numberOfRoomsInput = document.getElementById('numberOfRooms');
     const numberOfGuestsInput = document.getElementById('numberOfGuests');
-    const roomRateSpan = document.getElementById('roomRate');
-    const roomCountSpan = document.getElementById('roomCount');
-    const nightCountSpan = document.getElementById('nightCount');
-    const totalAmountSpan = document.getElementById('totalAmount');
-    const guestCapacityMessage = document.getElementById('guestCapacityMessage');
+    const checkInDateInput = document.getElementById('checkInDate');
+    const checkOutDateInput = document.getElementById('checkOutDate');
+    const summaryRooms = document.getElementById('summaryRooms');
+    const summaryNights = document.getElementById('summaryNights');
+    const totalAmountDisplay = document.getElementById('totalAmount');
 
     function updatePriceDetails() {
-        const selectedOption = roomTypeSelect.options[roomTypeSelect.selectedIndex];
-        const pricePerNight = selectedOption ? Number(selectedOption.dataset.price) : 0;
         const numberOfRooms = Number(numberOfRoomsInput.value) || 1;
-        const capacity = selectedOption ? Number(selectedOption.dataset.capacity) : 0;
+        const checkIn = new Date(checkInDateInput.value);
+        const checkOut = new Date(checkOutDateInput.value);
+        const numberOfNights = Math.max(1, Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
 
-        // Calculate number of nights
-        const checkInDate = new Date(checkInDateInput.value);
-        const checkOutDate = new Date(checkOutDateInput.value);
-        const numberOfNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)) || 0;
-
-        // Update display values, replacing NaN with 0
-        roomRateSpan.textContent = pricePerNight || 0;
-        roomCountSpan.textContent = numberOfRooms;
-        nightCountSpan.textContent = numberOfNights;
-        
-        // Calculate total amount, ensuring we don't display NaN
-        const total = (pricePerNight * numberOfRooms * numberOfNights) || 0;
-        totalAmountSpan.textContent = total;
-
-        // Update guest capacity message
-        const currentGuests = Number(numberOfGuestsInput.value) || 1;
-        const maxGuests = 2 * numberOfRooms;
-        if (currentGuests > maxGuests) {
-            guestCapacityMessage.textContent = `Maximum ${maxGuests} guests allowed for ${numberOfRooms} room(s) (2 guests per room)`;
-            guestCapacityMessage.classList.add('text-danger');
-        } else {
-            guestCapacityMessage.textContent = `Maximum capacity: ${maxGuests} guests (2 guests per room)`;
-            guestCapacityMessage.classList.remove('text-danger');
-        }
+        summaryRooms.textContent = numberOfRooms;
+        summaryNights.textContent = numberOfNights;
+        totalAmountDisplay.textContent = `₹${pricePerNight * numberOfRooms * numberOfNights}`;
     }
 
-    // Add event listeners
-    [checkInDateInput, checkOutDateInput, roomTypeSelect, numberOfRoomsInput, numberOfGuestsInput].forEach(element => {
-        element.addEventListener('change', updatePriceDetails);
-    });
-
-    // Set minimum check-out date based on check-in date
-    checkInDateInput.addEventListener('change', function() {
-        checkOutDateInput.min = this.value;
-        if (checkOutDateInput.value && checkOutDateInput.value < this.value) {
-            checkOutDateInput.value = this.value;
-        }
+    [numberOfRoomsInput, checkInDateInput, checkOutDateInput].forEach(input => {
+        input.addEventListener('change', updatePriceDetails);
     });
 
     // Add validation before form submission
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    document.querySelector('.validated-form').addEventListener('submit', function(e) {
         const numberOfRooms = Number(numberOfRoomsInput.value) || 1;
         const numberOfGuests = Number(numberOfGuestsInput.value) || 1;
         const guestsPerRoom = numberOfGuests / numberOfRooms;
@@ -195,16 +172,26 @@
             e.preventDefault();
             alert('Maximum 2 guests allowed per room. Please adjust your booking.');
         }
+
+        const checkIn = new Date(checkInDateInput.value);
+        const checkOut = new Date(checkOutDateInput.value);
+        if (checkOut <= checkIn) {
+            e.preventDefault();
+            alert('Check-out date must be after check-in date.');
+        }
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Set default dates
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        document.getElementById('checkInDate').value = today.toISOString().split('T')[0];
-        document.getElementById('checkOutDate').value = tomorrow.toISOString().split('T')[0];
+        // Set default dates if not already set
+        if (!checkInDateInput.value) {
+            const today = new Date();
+            checkInDateInput.value = today.toISOString().split('T')[0];
+        }
+        if (!checkOutDateInput.value) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            checkOutDateInput.value = tomorrow.toISOString().split('T')[0];
+        }
         
         // Initial price calculation
         updatePriceDetails();
@@ -265,84 +252,17 @@
     font-size: 0.85rem;
 }
 
-.btn {
-    padding: 0.7rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
 .btn-primary {
     background: #2c3e50;
     border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
     background: #34495e;
     transform: translateY(-2px);
-}
-
-.booking-details {
-    background: #f8f9fa;
-    padding: 1.2rem;
-    border-radius: 8px;
-    margin-top: 1rem;
-}
-
-.booking-details p {
-    margin-bottom: 0.8rem;
-    font-size: 0.95rem;
-}
-
-.booking-details .h5 {
-    color: #2c3e50;
-    margin-top: 1rem;
-    font-weight: 600;
-}
-
-@media (max-width: 768px) {
-    .row > [class*="col-"] {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
-
-    .form-control, .btn {
-        font-size: 0.95rem;
-        padding: 0.6rem 1rem;
-    }
-
-    .booking-details {
-        padding: 1rem;
-        margin-top: 0.5rem;
-    }
-
-    .booking-details p {
-        font-size: 0.9rem;
-        margin-bottom: 0.6rem;
-    }
-
-    .btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .card-body {
-        padding: 1rem;
-    }
-
-    .row {
-        margin-left: -0.5rem;
-        margin-right: -0.5rem;
-    }
-
-    .form-label {
-        font-size: 0.9rem;
-    }
-
-    .text-muted {
-        font-size: 0.8rem;
-    }
 }
 </style> 

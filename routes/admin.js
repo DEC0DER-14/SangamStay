@@ -61,8 +61,7 @@ router.get('/bookings', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
 
         let bookings = Booking.find(query)
             .populate('userId')
-            .populate('hotelId')
-            .populate('roomId');
+            .populate('hotelId');
 
         // Apply sorting
         switch (sortBy) {

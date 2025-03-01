@@ -9,9 +9,35 @@ const Hotel = require('../models/hotel');
 // Cash on Delivery payment handling
 module.exports.confirmCODBooking = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.bookingId);
+        const booking = await Booking.findById(req.params.bookingId).populate('hotelId');
         if (!booking) {
-            return res.status(404).json({ error: 'Booking not found' });
+            req.flash('error', 'Booking not found');
+            return res.redirect('/bookings');
+        }
+
+        // Check if booking belongs to the current user
+        if (booking.userId.toString() !== req.user._id.toString()) {
+            req.flash('error', 'Not authorized');
+            return res.redirect('/bookings');
+        }
+
+        // Check if booking is already confirmed
+        if (booking.status === 'confirmed') {
+            req.flash('error', 'Booking is already confirmed');
+            return res.redirect('/bookings');
+        }
+
+        // Check if hotel exists
+        const hotel = await Hotel.findById(booking.hotelId);
+        if (!hotel) {
+            req.flash('error', 'Hotel not found');
+            return res.redirect('/bookings');
+        }
+
+        // Check if enough rooms are available
+        if (booking.numberOfRooms > hotel.availableRooms) {
+            req.flash('error', 'Not enough rooms available');
+            return res.redirect('/bookings');
         }
 
         // Create payment record for COD
@@ -29,11 +55,8 @@ module.exports.confirmCODBooking = async (req, res) => {
         await booking.save();
 
         // Update hotel's available rooms
-        const hotel = await Hotel.findById(booking.hotelId);
-        if (hotel) {
-            hotel.availableRooms = Math.max(0, hotel.availableRooms - booking.numberOfRooms);
-            await hotel.save();
-        }
+        hotel.availableRooms = Math.max(0, hotel.availableRooms - booking.numberOfRooms);
+        await hotel.save();
 
         req.flash('success', 'Booking confirmed successfully! Please pay at the hotel during check-in.');
         res.redirect('/bookings');
