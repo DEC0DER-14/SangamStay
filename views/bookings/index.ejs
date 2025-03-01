@@ -1,13 +1,195 @@
 <% layout('layouts/boilerplate') %>
 
 <style>
+    .container {
+        padding: 1rem;
+    }
+
     .hotels-main-heading {
-        color: #ffffff; /* Same color as All Hotels heading */
-        font-weight: bold;
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .card-body {
+        padding: 1.2rem;
+    }
+
+    .card-title {
+        color: #2c3e50;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .card-text {
+        color: #2c3e50;
+        font-size: 0.95rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .badge {
+        padding: 0.5rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 0.7rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-primary {
+        background: #2c3e50;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: #34495e;
+        transform: translateY(-2px);
+    }
+
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .modal-header {
+        background: #2c3e50;
+        color: white;
+        border-radius: 12px 12px 0 0;
+        padding: 1.2rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 0.5rem;
+        }
+
+        .hotels-main-heading {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .modal-footer {
+            padding: 0.8rem 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .hotels-main-heading {
+            font-size: 1.3rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+        }
+
+        .card-text {
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.7rem;
+        }
+
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+    }
+
+    .search-filters {
+        background: #f8f9fa;
+        padding: 1.2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .search-filters .form-control {
+        border-radius: 8px;
+        padding: 0.7rem 1rem;
+        border: 1px solid #e0e0e0;
+    }
+
+    .search-filters .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    @media (max-width: 768px) {
+        .search-filters {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-filters .form-control {
+            margin-bottom: 0.5rem;
+        }
+
+        .search-filters .btn {
+            width: 100%;
+        }
     }
 </style>
 
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="hotels-main-heading">My Bookings</h1>
         <a href="/hotels" class="btn btn-primary">Book Another Stay</a>

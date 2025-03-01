@@ -1,78 +1,383 @@
 <% layout('layouts/boilerplate') %>
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title"><%= hotel.name %></h5>
-                <p class="card-text"><%= hotel.location %></p>
-                <p class="card-text">
-                    <small class="text-muted">₹<%= hotel.price %> per night</small>
-                </p>
-                <p class="card-text">Available Rooms: <%= hotel.availableRooms %></p>
-                <% if(hotel.description) { %>
-                    <p class="card-text"><%= hotel.description %></p>
-                <% } %>
-                <% if(hotel.amenities && hotel.amenities.length > 0) { %>
-                    <p class="card-text">
-                        <strong>Amenities:</strong>
-                        <%= hotel.amenities.join(', ') %>
-                    </p>
-                <% } %>
 
-                <!-- Room Types Section -->
+<style>
+    .hotel-details-container {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 1rem 0;
+    }
+    
+    .hotel-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        padding: 3rem 1rem;
+        margin-bottom: 2rem;
+        border-radius: 0 0 15px 15px;
+        color: white;
+        text-align: center;
+    }
+    
+    .hotel-name {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+    }
+    
+    .hotel-location {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .price-tag {
+        background: #2c3e50;
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border-radius: 10px;
+        font-size: 1.3rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 1.2rem;
+    }
+    
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.8rem;
+        margin: 1.2rem 0;
+    }
+    
+    .amenity-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.6rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #2c3e50;
+    }
+    
+    .room-card {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .room-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .review-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .review-header {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .review-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #2c3e50;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .btn-book-now {
+        background: #2c3e50;
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: none;
+        width: 100%;
+    }
+    
+    .btn-book-now:hover {
+        background: #34495e;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .admin-actions {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 10;
+    }
+
+    .rooms-available {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #27ae60;
+    }
+
+    @media (max-width: 768px) {
+        .hotel-name {
+            font-size: 1.5rem;
+        }
+        
+        .hotel-location {
+            font-size: 1rem;
+        }
+        
+        .price-tag {
+            font-size: 1.1rem;
+            padding: 0.6rem 1.2rem;
+        }
+        
+        .content-card {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .amenities-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.6rem;
+        }
+        
+        .room-card {
+            padding: 1rem;
+        }
+        
+        .review-card {
+            padding: 1rem;
+        }
+        
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .hotel-header {
+            padding: 2rem 1rem;
+        }
+        
+        .hotel-name {
+            font-size: 1.3rem;
+        }
+        
+        .hotel-location {
+            font-size: 0.9rem;
+        }
+        
+        .amenities-grid {
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        }
+        
+        .amenity-item {
+            font-size: 0.8rem;
+            padding: 0.5rem;
+        }
+        
+        .btn-book-now {
+            padding: 0.7rem 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .rooms-available {
+            font-size: 1.5rem;
+        }
+    }
+
+    .modal-content {
+        border-radius: 12px;
+    }
+
+    .modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    @media (max-width: 576px) {
+        .modal-content {
+            margin: 1rem;
+        }
+        
+        .modal-header, .modal-body, .modal-footer {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="hotel-details-container">
+    <!-- Hotel Header -->
+    <div class="hotel-header text-center">
+        <div class="container">
+            <h1 class="hotel-name"><%= hotel.name %></h1>
+            <p class="hotel-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <%= hotel.location %>
+            </p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Main Details -->
+                <div class="content-card">
+                    <div class="price-tag">
+                        <i class="fas fa-tag me-2"></i>₹<%= hotel.price %> per night
+                    </div>
+                    
+                    <% if(hotel.description) { %>
+                        <h4>About the Hotel</h4>
+                        <p class="lead"><%= hotel.description %></p>
+                    <% } %>
+                    
+                    <% if(hotel.amenities && hotel.amenities.length > 0) { %>
+                        <h4>Amenities</h4>
+                        <div class="amenities-grid">
+                            <% hotel.amenities.forEach(amenity => { %>
+                                <div class="amenity-item">
+                                    <% if(amenity === 'WiFi') { %>
+                                        <i class="fas fa-wifi"></i>
+                                    <% } else if(amenity === 'Pool') { %>
+                                        <i class="fas fa-swimming-pool"></i>
+                                    <% } else if(amenity === 'Spa') { %>
+                                        <i class="fas fa-spa"></i>
+                                    <% } else if(amenity === 'Restaurant') { %>
+                                        <i class="fas fa-utensils"></i>
+                                    <% } else if(amenity === 'Parking') { %>
+                                        <i class="fas fa-parking"></i>
+                                    <% } %>
+                                    <%= amenity %>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Room Types -->
                 <% if(hotel.rooms && hotel.rooms.length > 0) { %>
-                    <div class="mb-4">
-                        <h6 class="card-subtitle mb-2">Available Room Types:</h6>
+                    <div class="content-card">
+                        <h4 class="mb-4">Available Room Types</h4>
                         <% hotel.rooms.forEach(room => { %>
-                            <div class="card mb-2">
-                                <div class="card-body">
-                                    <h6><%= room.roomType %></h6>
-                                    <p class="mb-1">Capacity: <%= room.capacity %> persons</p>
-                                    <p class="mb-0">Price: ₹<%= room.pricePerNight %> per night</p>
+                            <div class="room-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-2"><%= room.roomType %></h5>
+                                        <p class="mb-2">
+                                            <i class="fas fa-user-friends me-2"></i>
+                                            Capacity: <%= room.capacity %> persons
+                                        </p>
+                                    </div>
+                                    <div class="text-end">
+                                        <h5 class="mb-2">₹<%= room.pricePerNight %></h5>
+                                        <small class="text-muted">per night</small>
+                                    </div>
                                 </div>
                             </div>
                         <% }) %>
                     </div>
                 <% } %>
 
-                <% if(currentUser) { %>
-                    <% if(currentUser.role === 'admin' || (hotel.author && hotel.author._id && hotel.author._id.equals(currentUser._id))) { %>
-                        <div class="card-body">
-                            <a class="card-link btn btn-info" href="/hotels/<%= hotel._id %>/edit">Edit</a>
-                            <form class="d-inline delete-hotel-form" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
-                                <button type="button" class="btn btn-danger delete-hotel-btn" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">Delete</button>
+                <!-- Reviews Section -->
+                <% if(hotel.reviews && hotel.reviews.length > 0) { %>
+                    <div class="content-card">
+                        <h4 class="mb-4">Guest Reviews</h4>
+                        <% for(let review of hotel.reviews) { %>
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="review-avatar">
+                                        <%= review.author ? review.author.username.charAt(0).toUpperCase() : 'A' %>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0"><%= review.author ? review.author.username : 'Anonymous' %></h6>
+                                        <small class="text-muted">
+                                            <%= new Date(review.createdAt).toLocaleDateString() %>
+                                        </small>
+                                    </div>
+                                </div>
+                                <p class="mb-0"><%= review.body %></p>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="content-card">
+                    <div class="text-center mb-4">
+                        <h4>Available Rooms</h4>
+                        <div class="rooms-available fs-1 text-success mb-2">
+                            <%= hotel.availableRooms %>
+                        </div>
+                        <p class="text-muted">rooms left</p>
+                    </div>
+
+                    <% if(currentUser) { %>
+                        <a href="/hotels/<%= hotel._id %>/book" class="btn btn-book-now w-100">
+                            Book Now
+                        </a>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-book-now w-100">
+                            Login to Book
+                        </a>
+                    <% } %>
+                </div>
+
+                <% if(currentUser && (currentUser.role === 'admin' || (hotel.author && hotel.author._id && hotel.author._id.equals(currentUser._id)))) { %>
+                    <div class="content-card">
+                        <h4 class="mb-3">Admin Actions</h4>
+                        <div class="d-grid gap-2">
+                            <a class="btn btn-outline-primary" href="/hotels/<%= hotel._id %>/edit">
+                                <i class="fas fa-edit me-2"></i>Edit Hotel
+                            </a>
+                            <form class="delete-hotel-form" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
+                                <button type="button" class="btn btn-outline-danger w-100 delete-hotel-btn" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">
+                                    <i class="fas fa-trash-alt me-2"></i>Delete Hotel
+                                </button>
                             </form>
                         </div>
-                    <% } %>
-                    <a href="/hotels/<%= hotel._id %>/book" class="btn btn-primary">Book Now</a>
-                <% } else { %>
-                    <a href="/login" class="btn btn-primary">Login to Book</a>
+                    </div>
                 <% } %>
             </div>
         </div>
-
-        <!-- Reviews Section -->
-        <% if(hotel.reviews && hotel.reviews.length > 0) { %>
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h4>Reviews</h4>
-                    <% for(let review of hotel.reviews) { %>
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h6 class="card-subtitle mb-2 text-muted">
-                                    By <%= review.author ? review.author.username : 'Anonymous' %>
-                                </h6>
-                                <p class="card-text"><%= review.body %></p>
-                            </div>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
-        <% } %>
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

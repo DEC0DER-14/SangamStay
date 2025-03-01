@@ -52,16 +52,15 @@ app.use(express.json());
 // Session configuration with secure settings
 const sessionConfig = {
     secret: process.env.SESSION_SECRET,
-    name: 'session', // default is 'connect.sid'
+    name: 'session',
     resave: false,
     saveUninitialized: true,
     cookie: {
         httpOnly: true,
-        // Only use secure cookies in production
-        secure: false, // Set to true in production
+        secure: process.env.NODE_ENV === 'production', // Only use secure in production
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
         maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: 'lax' // Changed from strict to lax for OAuth
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
     }
 };
 

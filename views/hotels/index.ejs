@@ -1,57 +1,281 @@
 <% layout('layouts/boilerplate') %>
 
 <style>
-    .hotels-main-heading {
-        color: #ffffff; /* Dark blue color */
-        font-weight: bold;
+    .hotels-container {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 1rem 0;
+    }
+    
+    .search-section {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .search-heading {
+        color: #ffffff;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-align: center;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 0 1rem;
+    }
+    
+    .search-form {
+        max-width: 600px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 1rem;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .search-form .form-control {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        padding: 0.7rem 1rem;
+        font-size: 1rem;
+    }
+
+    .search-form .input-group {
+        flex-wrap: nowrap;
+    }
+
+    .search-form .btn {
+        padding: 0.7rem 1rem;
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 576px) {
+        .search-form .input-group {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .search-form .btn {
+            width: 100%;
+        }
+
+        .search-heading {
+            font-size: 1.5rem;
+        }
+    }
+    
+    .hotel-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+        background: white;
+    }
+    
+    .hotel-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .hotel-image {
+        height: 180px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    
+    .hotel-price {
+        position: absolute;
+        top: 0.8rem;
+        right: 0.8rem;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.9rem;
+    }
+    
+    .hotel-content {
+        padding: 1rem;
+    }
+    
+    .hotel-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.4rem;
+    }
+    
+    .hotel-location {
+        color: #7f8c8d;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
+    }
+    
+    .hotel-amenities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .amenity-badge {
+        background: #f8f9fa;
+        padding: 0.3rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        color: #34495e;
+    }
+    
+    .hotel-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.8rem;
+        border-top: 1px solid #eee;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .rooms-available {
+        color: #27ae60;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .hotel-footer .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .col-md-6 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+    
+    .no-hotels {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 15px;
+        margin-top: 2rem;
     }
 </style>
 
-<h1 class="hotels-main-heading">All Hotels</h1>
-
-<!-- Add search bar -->
-<div class="row mb-4">
-    <div class="col-md-6">
-        <form class="d-flex" action="/hotels" method="GET">
-            <input class="form-control me-2" type="search" placeholder="Search hotels by name or location" 
-                   name="search" value="<%= typeof search !== 'undefined' ? search : '' %>">
-            <button class="btn btn-primary" type="submit">Search</button>
-            <% if(typeof search !== 'undefined' && search) { %>
-                <a href="/hotels" class="btn btn-secondary ms-2">Clear</a>
-            <% } %>
-        </form>
-    </div>
-</div>
-
-<% if(currentUser && currentUser.role === 'admin') { %>
-<div>
-    <a href="/hotels/new" class="btn btn-primary mb-3">Add New Hotel</a>
-</div>
-<% } %>
-
-<div class="row">
-    <% if(hotels.length === 0) { %>
-        <div class="col-12">
-            <p class="text-muted">No hotels found matching your search.</p>
+<div class="hotels-container">
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="container">
+            <h1 class="search-heading">Find Your Perfect Stay</h1>
+            <form class="search-form" action="/hotels" method="GET">
+                <div class="input-group">
+                    <input class="form-control form-control-lg" type="search" 
+                           placeholder="Search hotels by name or location" 
+                           name="search" 
+                           value="<%= typeof search !== 'undefined' ? search : '' %>">
+                    <button class="btn btn-light btn-lg" type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <% if(typeof search !== 'undefined' && search) { %>
+                        <a href="/hotels" class="btn btn-outline-light btn-lg ms-2">Clear</a>
+                    <% } %>
+                </div>
+            </form>
         </div>
-    <% } %>
-    <% for(let hotel of hotels) { %>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title"><%= hotel.name %></h5>
-                    <p class="card-text">
-                        <small class="text-muted"><%= hotel.location %></small>
-                    </p>
-                    <p class="card-text">₹<%= hotel.price %> per night</p>
-                    <p class="card-text">Available Rooms: <%= hotel.availableRooms %></p>
-                    
-                    <div class="d-flex justify-content-between">
-                        <a href="/hotels/<%= hotel._id %>" class="btn btn-primary">View Details</a>
-                        <a href="/hotels/<%= hotel._id %>/book" class="btn btn-success">Book Now</a>
+    </div>
+
+    <div class="container">
+        <% if(currentUser && currentUser.role === 'admin') { %>
+            <div class="mb-4">
+                <a href="/hotels/new" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Hotel
+                </a>
+            </div>
+        <% } %>
+
+        <div class="row">
+            <% if(hotels.length === 0) { %>
+                <div class="col-12">
+                    <div class="no-hotels">
+                        <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                        <h3>No hotels found</h3>
+                        <p class="text-muted">Try adjusting your search criteria</p>
                     </div>
                 </div>
-            </div>
+            <% } %>
+            
+            <% for(let hotel of hotels) { %>
+                <div class="col-md-6 col-lg-4">
+                    <div class="hotel-card">
+                        <div class="hotel-image" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop')">
+                            <div class="hotel-price">₹<%= hotel.price %> / night</div>
+                        </div>
+                        <div class="hotel-content">
+                            <h3 class="hotel-name"><%= hotel.name %></h3>
+                            <p class="hotel-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <%= hotel.location %>
+                            </p>
+                            
+                            <div class="hotel-amenities">
+                                <% if(hotel.amenities && hotel.amenities.length > 0) { %>
+                                    <% hotel.amenities.slice(0, 3).forEach(amenity => { %>
+                                        <span class="amenity-badge">
+                                            <% if(amenity === 'WiFi') { %>
+                                                <i class="fas fa-wifi"></i>
+                                            <% } else if(amenity === 'Pool') { %>
+                                                <i class="fas fa-swimming-pool"></i>
+                                            <% } else if(amenity === 'Spa') { %>
+                                                <i class="fas fa-spa"></i>
+                                            <% } else if(amenity === 'Restaurant') { %>
+                                                <i class="fas fa-utensils"></i>
+                                            <% } else if(amenity === 'Parking') { %>
+                                                <i class="fas fa-parking"></i>
+                                            <% } %>
+                                            <%= amenity %>
+                                        </span>
+                                    <% }) %>
+                                    <% if(hotel.amenities.length > 3) { %>
+                                        <span class="amenity-badge">+<%= hotel.amenities.length - 3 %> more</span>
+                                    <% } %>
+                                <% } %>
+                            </div>
+                            
+                            <div class="hotel-footer">
+                                <div class="rooms-available">
+                                    <i class="fas fa-door-open"></i>
+                                    <%= hotel.availableRooms %> rooms available
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="/hotels/<%= hotel._id %>" class="btn btn-outline-secondary">
+                                        Details
+                                    </a>
+                                    <a href="/hotels/<%= hotel._id %>/book" class="btn btn-book">
+                                        Book Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
         </div>
-    <% } %>
+    </div>
 </div> 

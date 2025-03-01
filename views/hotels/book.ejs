@@ -209,4 +209,140 @@
         // Initial price calculation
         updatePriceDetails();
     });
-</script> 
+</script>
+
+<style>
+.container {
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0.5rem;
+    }
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 576px) {
+    .card-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+}
+
+.form-label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.text-muted {
+    font-size: 0.85rem;
+}
+
+.btn {
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #2c3e50;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #34495e;
+    transform: translateY(-2px);
+}
+
+.booking-details {
+    background: #f8f9fa;
+    padding: 1.2rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.booking-details p {
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.booking-details .h5 {
+    color: #2c3e50;
+    margin-top: 1rem;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .row > [class*="col-"] {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .form-control, .btn {
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .booking-details {
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .booking-details p {
+        font-size: 0.9rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1rem;
+    }
+
+    .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+
+    .form-label {
+        font-size: 0.9rem;
+    }
+
+    .text-muted {
+        font-size: 0.8rem;
+    }
+}
+</style> 
