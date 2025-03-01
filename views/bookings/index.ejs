@@ -129,6 +129,12 @@
         .modal-footer {
             padding: 0.8rem 1rem;
         }
+        .modal-backdrop {
+    display: none !important;
+}
+.modal {
+    overflow-y: auto !important;
+}
     }
 
     @media (max-width: 576px) {
@@ -186,6 +192,32 @@
         .search-filters .btn {
             width: 100%;
         }
+    }
+
+    /* Modal and Backdrop Fixes for All Screen Sizes */
+    .modal-backdrop {
+        display: none !important;
+    }
+
+    .modal {
+        overflow-y: auto !important;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Hide Razorpay elements when modal is open */
+    body.modal-open .razorpay-container,
+    body.modal-open .razorpay-backdrop {
+        display: none !important;
+    }
+
+    /* Ensure modals appear above Razorpay */
+    .modal.show {
+        display: block !important;
+        z-index: 2147483648 !important;
+    }
+
+    .modal-dialog {
+        z-index: 2147483649 !important;
     }
 </style>
 
@@ -387,4 +419,4 @@
             <% }) %>
         </div>
     <% } %>
-</div> 
+</div>
