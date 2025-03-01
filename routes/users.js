@@ -34,8 +34,7 @@ router.get('/auth/google/callback',
             }
             
             // Successful authentication
-            const redirectTo = req.session.returnTo || '/hotels';
-            delete req.session.returnTo;
+            req.flash('success', 'Welcome to SangamStay!');
             
             // Save session before redirect
             req.session.save((err) => {
@@ -43,8 +42,15 @@ router.get('/auth/google/callback',
                     req.flash('error', 'Failed to save session');
                     return res.redirect('/login');
                 }
-                req.flash('success', 'Welcome to SangamStay!');
-                res.redirect(redirectTo);
+                
+                // Redirect admin users to dashboard
+                if (req.user.role === 'admin') {
+                    return res.redirect('/admin/dashboard');
+                } else {
+                    const redirectTo = req.session.returnTo || '/hotels';
+                    delete req.session.returnTo;
+                    return res.redirect(redirectTo);
+                }
             });
         });
     }

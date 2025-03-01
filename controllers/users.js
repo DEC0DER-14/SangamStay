@@ -57,8 +57,6 @@ module.exports.renderLogin = (req, res) => {
 
 module.exports.login = (req, res) => {
     req.flash('success', 'Welcome back!');
-    const redirectUrl = req.session.returnTo || '/hotels';
-    delete req.session.returnTo;
     
     // Clear browser history and redirect
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -68,6 +66,8 @@ module.exports.login = (req, res) => {
     if (req.user.role === 'admin') {
         return res.redirect('/admin/dashboard');
     } else {
+        const redirectUrl = req.session.returnTo || '/hotels';
+        delete req.session.returnTo;
         return res.redirect(redirectUrl);
     }
 }

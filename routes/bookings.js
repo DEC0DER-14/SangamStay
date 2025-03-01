@@ -68,7 +68,7 @@ router.delete('/clear-my-bookings', isLoggedIn, async (req, res) => {
 // Update the cancel booking route
 router.post('/:id/cancel', isLoggedIn, async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id);
+        const booking = await Booking.findById(req.params.id).populate('hotelId');
         
         if (!booking) {
             req.flash('error', 'Booking not found');
@@ -87,8 +87,16 @@ router.post('/:id/cancel', isLoggedIn, async (req, res) => {
             return res.redirect('/bookings');
         }
 
+        // Only update available rooms if the booking was confirmed
+        if (booking.status === 'confirmed' && booking.hotelId) {
+            // Add the rooms back to available rooms
+            booking.hotelId.availableRooms += booking.numberOfRooms;
+            await booking.hotelId.save();
+        }
+
         // Update the booking status
-        await Booking.findByIdAndUpdate(booking._id, { status: 'cancelled' });
+        booking.status = 'cancelled';
+        await booking.save();
         
         req.flash('success', 'Booking cancelled successfully');
         return res.redirect('/bookings');

@@ -221,9 +221,8 @@ module.exports.createBooking = async (req, res) => {
         // Save the booking first
         await booking.save();
 
-        // Update available rooms
-        hotel.availableRooms -= parsedNumberOfRooms;
-        await hotel.save();
+        // Do not update available rooms here since booking is pending
+        // Rooms will be updated when booking is confirmed
 
         // Render the payment page
         res.render('payment/checkout', {
@@ -357,56 +356,37 @@ module.exports.updateBookingStatus = async (req, res) => {
             return res.redirect('/admin/bookings');
         }
 
-        const oldRoomCount = parseInt(booking.numberOfRooms) || 0;
         const oldStatus = booking.status;
-        
-        try {
-            // Update room count based on status change
-            if ((status === 'completed' || status === 'cancelled') && oldStatus === 'confirmed') {
-                // When cancelling or completing a confirmed booking, add rooms back
-                const hotel = await Hotel.findById(booking.hotelId._id);
-                if (hotel) {
-                    const currentAvailable = parseInt(hotel.availableRooms) || 0;
-                    const totalRooms = parseInt(hotel.totalRooms) || 20;
-                    
-                    // Calculate new available rooms
-                    const newAvailable = currentAvailable + oldRoomCount;
-                    
-                    // Ensure it doesn't exceed total rooms
-                    hotel.availableRooms = Math.min(totalRooms, newAvailable);
-                    await hotel.save();
-                }
-            } else if (status === 'confirmed' && (oldStatus === 'cancelled' || oldStatus === 'completed')) {
-                // When reactivating a cancelled/completed booking, subtract rooms
-                const hotel = await Hotel.findById(booking.hotelId._id);
-                if (hotel) {
-                    const currentAvailable = parseInt(hotel.availableRooms) || 0;
-                    
-                    // Calculate new available rooms
-                    const newAvailable = currentAvailable - oldRoomCount;
-                    
-                    // Ensure it doesn't go below 0
-                    hotel.availableRooms = Math.max(0, newAvailable);
-                    await hotel.save();
-                }
+        const numberOfRooms = booking.numberOfRooms;
+
+        // Handle room count updates based on status changes
+        if (booking.hotelId) {
+            const hotel = booking.hotelId;
+            const currentAvailable = hotel.availableRooms;
+
+            if (status === 'confirmed' && (oldStatus === 'pending' || oldStatus === 'cancelled')) {
+                // When confirming a pending/cancelled booking, subtract rooms
+                hotel.availableRooms = Math.max(0, currentAvailable - numberOfRooms);
+                await hotel.save();
+            } 
+            else if (status === 'cancelled' && oldStatus === 'confirmed') {
+                // When cancelling a confirmed booking, add rooms back
+                hotel.availableRooms = currentAvailable + numberOfRooms;
+                await hotel.save();
             }
-
-            // If marking as completed, update checkout details
-            if (status === 'completed' && booking.status !== 'completed') {
-                booking.isCheckedOut = true;
-                booking.actualCheckOutTime = new Date();
-            }
-
-            booking.status = status;
-            await booking.save();
-
-            req.flash('success', 'Booking status updated successfully');
-            res.redirect('/admin/bookings');
-        } catch (error) {
-            console.error('Error updating room count:', error);
-            req.flash('error', 'Error updating room availability. Please try again.');
-            res.redirect('/admin/bookings');
         }
+
+        // If marking as completed, update checkout details
+        if (status === 'completed' && booking.status !== 'completed') {
+            booking.isCheckedOut = true;
+            booking.actualCheckOutTime = new Date();
+        }
+
+        booking.status = status;
+        await booking.save();
+
+        req.flash('success', 'Booking status updated successfully');
+        res.redirect('/admin/bookings');
     } catch (e) {
         console.error('Error in updateBookingStatus:', e);
         req.flash('error', 'Error updating booking status');
