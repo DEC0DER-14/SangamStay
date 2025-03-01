@@ -19,10 +19,6 @@
                     </p>
                     <div class="profile-stats d-flex justify-content-center gap-4 mt-3">
                         <div class="stat-item">
-                            <div class="stat-label">Role</div>
-                            <div class="stat-value"><%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %></div>
-                        </div>
-                        <div class="stat-item">
                             <div class="stat-label">Member Since</div>
                             <div class="stat-value"><%= new Date(user.createdAt).toLocaleDateString() %></div>
                         </div>

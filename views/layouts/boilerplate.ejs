@@ -16,19 +16,24 @@
             position: relative;
             margin: 0;
             padding-bottom: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         main {
-            min-height: calc(100vh - 60px); /* Adjust 60px according to your navbar height */
-            padding-bottom: 50px; /* Give some space before footer */
+            flex: 1 0 auto;
+            min-height: calc(100vh - 60px);
+            padding-bottom: 50px;
+            position: relative;
+            z-index: 1;
         }
 
         .footer {
             width: 100%;
             background-color: #212529;
-            margin-top: auto;
-            position: relative; /* Changed from fixed to relative */
-            bottom: 0;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
         }
 
         .footer a {
@@ -44,12 +49,24 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            main {
+                flex: 1 0 auto;
+                padding-bottom: 0;
+            }
+
             .footer {
                 text-align: center;
+                margin-top: auto;
             }
             
             .footer .col-md-6 {
-                margin-bottom: 2rem;
+                margin-bottom: 1rem;
             }
         }
     </style>

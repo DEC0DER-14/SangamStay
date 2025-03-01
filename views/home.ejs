@@ -1,17 +1,14 @@
 <% layout('layouts/boilerplate') %>
 
 <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-    <main class="px-3 text-center text-white">
-        <div class="container mt-5">
+    <main class="px-3 text-center text-white d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+        <div class="container">
             <h1 class="display-4">SangamStay</h1>
             <p class="lead mb-4">Welcome to SangamStay! Your perfect stay, just a click away! <br>
                 Find the best hotels near you, offering luxury, affordability, and a seamless booking experience.</p>
             <a href="/hotels" class="btn btn-lg btn-light font-weight-bold">View Hotels</a>
         </div>
     </main>
-    <footer class="mt-auto text-center text-white-50">
-        <p>&copy; 2024 SangamStay</p>
-    </footer>
 </div>
 
 <style>
@@ -25,7 +22,8 @@
 
     .cover-container {
         max-width: 60vw;
-        padding-top: 10vh;
+        position: relative;
+        z-index: 1;
     }
 
     .display-4 {
@@ -52,17 +50,13 @@
         box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
     }
 
-    footer {
-        position: fixed;
-        bottom: 20px;
-        left: 0;
-        right: 0;
-    }
-
     @media (max-width: 768px) {
         .cover-container {
             max-width: 90vw;
-            padding-top: 5vh;
+        }
+
+        main {
+            padding-bottom: 2rem;
         }
 
         .display-4 {
@@ -71,6 +65,7 @@
 
         .lead {
             font-size: 1.2rem;
+            padding: 0 1rem;
         }
     }
 </style> 

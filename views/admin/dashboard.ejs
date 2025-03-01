@@ -1,14 +1,16 @@
 <% layout('layouts/boilerplate') %>
 <div class="container mt-5">
-    <h1>Admin Dashboard</h1>
+    <h1 class="dashboard-title">Admin Dashboard</h1>
     
     <div class="row mb-4">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card dashboard-card">
                 <div class="card-body">
-                    <h3>Quick Actions</h3>
-                    <a href="/hotels/new" class="btn btn-primary me-2">Add New Hotel</a>
-                    <a href="/admin/bookings" class="btn btn-info me-2">View All Bookings</a>
+                    <h3 class="section-title">Quick Actions</h3>
+                    <div class="action-buttons">
+                        <a href="/hotels/new" class="btn btn-primary">Add New Hotel</a>
+                        <a href="/admin/bookings" class="btn btn-info">View All Bookings</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -16,7 +18,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <h3>Manage Hotels</h3>
+            <h3 class="section-title">Manage Hotels</h3>
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
@@ -29,22 +31,26 @@
                     </thead>
                     <tbody>
                         <% hotels.forEach(hotel => { %>
-                            <tr>
-                                <td><%= hotel.name %></td>
-                                <td><%= hotel.location %></td>
-                                <td>
-                                    <form class="d-inline" action="/admin/hotels/<%= hotel._id %>/rooms" method="POST">
-                                        <input type="number" name="availableRooms" value="<%= hotel.availableRooms %>" 
-                                               class="form-control form-control-sm d-inline" style="width: 80px">
-                                        <button type="submit" class="btn btn-sm btn-success">Update</button>
+                            <tr class="hotel-row">
+                                <td data-label="Hotel Name"><%= hotel.name %></td>
+                                <td data-label="Location"><%= hotel.location %></td>
+                                <td data-label="Available Rooms">
+                                    <form class="rooms-form" action="/admin/hotels/<%= hotel._id %>/rooms" method="POST">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" name="availableRooms" value="<%= hotel.availableRooms %>" 
+                                                   class="form-control" min="0">
+                                            <button type="submit" class="btn btn-sm btn-success">Update</button>
+                                        </div>
                                     </form>
                                 </td>
-                                <td>
-                                    <a href="/hotels/<%= hotel._id %>/edit" class="btn btn-sm btn-warning">Edit</a>
-                                    <form class="d-inline delete-hotel-form" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
-                                        <button type="button" class="btn btn-sm btn-danger delete-hotel-btn" 
-                                                data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">Delete</button>
-                                    </form>
+                                <td data-label="Actions" class="action-cell">
+                                    <div class="action-buttons">
+                                        <a href="/hotels/<%= hotel._id %>/edit" class="btn btn-sm btn-warning">Edit</a>
+                                        <form class="delete-hotel-form" action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
+                                            <button type="button" class="btn btn-sm btn-danger delete-hotel-btn" 
+                                                    data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">Delete</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <% }) %>
@@ -55,6 +61,147 @@
     </div>
 </div>
 
+<style>
+    .dashboard-title {
+        color: #ffffff;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        color: #ffffff;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .dashboard-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .rooms-form {
+        min-width: 150px;
+    }
+
+    .table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        padding: 1rem;
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 0.5rem;
+        }
+
+        .dashboard-title {
+            font-size: 1.75rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            text-align: center;
+        }
+
+        .action-buttons {
+            justify-content: center;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .table {
+            border: 0;
+            box-shadow: none;
+        }
+
+        .table thead {
+            display: none;
+        }
+
+        .hotel-row {
+            display: block;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+
+        .table td {
+            display: block;
+            text-align: left;
+            padding: 0.75rem 0;
+            border: none;
+        }
+
+        .table td::before {
+            content: attr(data-label);
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .rooms-form {
+            width: 100%;
+        }
+
+        .rooms-form .input-group {
+            width: 100%;
+        }
+
+        .action-cell {
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .action-cell::before {
+            display: none;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .delete-hotel-form {
+            margin: 0;
+        }
+
+        .btn {
+            width: 100%;
+            margin: 0;
+        }
+    }
+</style>
+
+<!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -73,51 +220,30 @@
     </div>
 </div>
 
-<!-- Add this modal for editing booking details -->
-<div class="modal fade" id="editBookingModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Booking</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editBookingForm" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label" for="editNumberOfRooms">Number of Rooms</label>
-                        <input type="number" class="form-control" id="editNumberOfRooms" 
-                               name="numberOfRooms" min="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="editNumberOfGuests">Number of Guests</label>
-                        <input type="number" class="form-control" id="editNumberOfGuests" 
-                               name="numberOfGuests" min="1" required>
-                        <small class="text-muted">Maximum 2 guests per room</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update Booking</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add this script at the bottom of the page -->
 <script>
-function openEditBookingModal(bookingId, rooms, guests) {
-    document.getElementById('editBookingForm').action = `/admin/bookings/${bookingId}/update`;
-    document.getElementById('editNumberOfRooms').value = rooms;
-    document.getElementById('editNumberOfGuests').value = guests;
-    new bootstrap.Modal(document.getElementById('editBookingModal')).show();
-}
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteModal = document.getElementById('deleteConfirmationModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        let formToSubmit = null;
 
-// Add form validation
-document.getElementById('editBookingForm').addEventListener('submit', function(e) {
-    const rooms = Number(document.getElementById('editNumberOfRooms').value);
-    const guests = Number(document.getElementById('editNumberOfGuests').value);
-    
-    if (guests / rooms > 2) {
-        e.preventDefault();
-        alert('Maximum 2 guests allowed per room');
-    }
-});
+        document.querySelectorAll('.delete-hotel-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                formToSubmit = this.closest('form');
+            });
+        });
+
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', function() {
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                }
+            });
+        }
+
+        if (deleteModal) {
+            deleteModal.addEventListener('hidden.bs.modal', function() {
+                formToSubmit = null;
+            });
+        }
+    });
 </script> 
