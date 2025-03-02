@@ -25,6 +25,31 @@ const Room = require('./models/room');
 const adminRoutes = require('./routes/admin');
 const bookingRoutes = require('./routes/bookings');
 const paymentRoutes = require('./routes/payment');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
+const logger = require('./utils/logger');
+const fs = require('fs');
+
+// Create logs directory if it doesn't exist
+if (!fs.existsSync('logs')) {
+    fs.mkdirSync('logs');
+}
+
+// Create a write stream for Morgan access logs
+const accessLogStream = fs.createWriteStream(
+    path.join(__dirname, 'logs/access.log'),
+    { flags: 'a' }
+);
+
+// Configure rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 // Import Google OAuth configuration
 require('./config/passport-google');
@@ -39,6 +64,13 @@ mongoose.connect(process.env.MONGODB_URI)
     });
 
 const app = express();
+
+// Setup Morgan logger
+if (process.env.NODE_ENV === 'production') {
+    app.use(morgan('combined', { stream: accessLogStream }));
+} else {
+    app.use(morgan('dev'));
+}
 
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
@@ -168,6 +200,9 @@ app.use(cookieParser());
 // Add JWT verification middleware
 app.use(verifyToken);
 
+// Apply rate limiting to all routes
+app.use(limiter);
+
 // Routes
 app.use('/hotels', hotelRoutes);
 app.use('/hotels/:id/reviews', reviewRoutes);
@@ -188,6 +223,17 @@ app.all("*", (req, res, next) => {
 // Error handler
 app.use((err, req, res, next) => {
     const { statusCode = 500, message = "Something went wrong" } = err;
+    
+    // Log error details
+    logger.error('Error:', {
+        statusCode,
+        message,
+        stack: err.stack,
+        path: req.path,
+        method: req.method,
+        ip: req.ip
+    });
+
     if (!err.message) err.message = "Oh No, Something Went Wrong!";
     res.status(statusCode).render("error", { err });
 });
@@ -195,7 +241,7 @@ app.use((err, req, res, next) => {
 // Start server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Serving on port ${port}`);
+    logger.info(`Server started on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
     if (process.env.NODE_ENV !== 'production') {
         open(`http://localhost:${port}`);
     }
