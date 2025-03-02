@@ -17,10 +17,24 @@ module.exports.register = async (req, res) => {
     try {
         const { email, username, password } = req.body;
         
-        // Check if user already exists
+        // Check if email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             req.flash('error', 'Email is already registered');
+            return res.redirect('/register');
+        }
+
+        // Check if username already exists
+        const existingUsername = await User.findOne({ username });
+        if (existingUsername) {
+            req.flash('error', 'Username is already taken. Please choose a different username');
+            return res.redirect('/register');
+        }
+
+        // Also check in pending users for username
+        const pendingUsername = await PendingUser.findOne({ username });
+        if (pendingUsername) {
+            req.flash('error', 'Username is already taken. Please choose a different username');
             return res.redirect('/register');
         }
 
@@ -44,6 +58,7 @@ module.exports.register = async (req, res) => {
         req.flash('success', 'Please verify your email to sign in');
         res.redirect('/login');
     } catch (e) {
+        console.error('Registration error:', e);
         req.flash('error', e.message);
         res.redirect('/register');
     }
@@ -62,7 +77,13 @@ module.exports.login = (req, res) => {
         return res.redirect('/login');
     }
 
-    // Check if user is verified
+    // Skip verification check for admin users
+    if (req.user.role === 'admin') {
+        req.flash('success', 'Welcome back!');
+        return res.redirect('/admin/dashboard');
+    }
+
+    // Check if regular user is verified
     if (!req.user.isVerified) {
         req.logout((err) => {
             if (err) {
@@ -81,13 +102,9 @@ module.exports.login = (req, res) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     
-    if (req.user.role === 'admin') {
-        return res.redirect('/admin/dashboard');
-    } else {
-        const redirectUrl = req.session.returnTo || '/hotels';
-        delete req.session.returnTo;
-        return res.redirect(redirectUrl);
-    }
+    const redirectUrl = req.session.returnTo || '/hotels';
+    delete req.session.returnTo;
+    return res.redirect(redirectUrl);
 }
 
 module.exports.logout = (req, res, next) => {
@@ -173,6 +190,11 @@ module.exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.params;
         
+        if (!token) {
+            req.flash('error', 'Verification token is missing');
+            return res.redirect('/register');
+        }
+
         const pendingUser = await PendingUser.findOne({
             verificationToken: token,
             verificationTokenExpires: { $gt: Date.now() }
@@ -183,6 +205,14 @@ module.exports.verifyEmail = async (req, res) => {
             return res.redirect('/register');
         }
 
+        // Check if user already exists
+        const existingUser = await User.findOne({ email: pendingUser.email });
+        if (existingUser) {
+            await PendingUser.findByIdAndDelete(pendingUser._id);
+            req.flash('error', 'Email is already registered and verified');
+            return res.redirect('/login');
+        }
+
         // Create actual user
         const user = new User({
             username: pendingUser.username,
@@ -191,7 +221,7 @@ module.exports.verifyEmail = async (req, res) => {
         });
 
         // Register user with passport
-        const registeredUser = await User.register(user, pendingUser.password);
+        await User.register(user, pendingUser.password);
         
         // Delete pending user
         await PendingUser.findByIdAndDelete(pendingUser._id);
@@ -200,7 +230,12 @@ module.exports.verifyEmail = async (req, res) => {
         res.redirect('/login');
         
     } catch (e) {
-        req.flash('error', 'Something went wrong during verification');
+        console.error('Verification error:', e);
+        if (e.name === 'UserExistsError') {
+            req.flash('error', 'This email is already registered');
+            return res.redirect('/login');
+        }
+        req.flash('error', 'Something went wrong during verification. Please try registering again.');
         res.redirect('/register');
     }
 };

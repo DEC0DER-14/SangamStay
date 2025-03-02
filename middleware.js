@@ -102,6 +102,11 @@ module.exports.deleteHotel = async (req, res) => {
 };
 
 module.exports.isVerified = async (req, res, next) => {
+    // Skip verification check for admin users
+    if (req.user.role === 'admin') {
+        return next();
+    }
+
     if (!req.user.isVerified) {
         req.logout((err) => {
             if (err) {
@@ -118,18 +123,28 @@ module.exports.isVerified = async (req, res, next) => {
 module.exports.checkVerificationToken = async (req, res, next) => {
     try {
         const { token } = req.params;
+        
+        if (!token) {
+            req.flash('error', 'Verification token is missing');
+            return res.redirect('/register');
+        }
+
         const pendingUser = await PendingUser.findOne({
             verificationToken: token,
             verificationTokenExpires: { $gt: Date.now() }
         });
 
         if (!pendingUser) {
-            req.flash('error', 'Verification link has expired. Please register again.');
+            req.flash('error', 'Verification link has expired or is invalid. Please register again.');
             return res.redirect('/register');
         }
+
+        // Add pending user to request for use in next middleware
+        req.pendingUser = pendingUser;
         next();
     } catch (e) {
-        req.flash('error', 'Invalid verification link');
+        console.error('Verification token check error:', e);
+        req.flash('error', 'Invalid verification link. Please try registering again.');
         res.redirect('/register');
     }
 }; 

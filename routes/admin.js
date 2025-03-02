@@ -102,4 +102,47 @@ router.get('/users', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
 // Update booking details
 router.post('/bookings/:bookingId/update', isLoggedIn, isAdmin, catchAsync(hotels.updateBookingDetails));
 
+// Create admin user
+router.get('/create-admin', isLoggedIn, isAdmin, (req, res) => {
+    res.render('admin/create-admin');
+});
+
+router.post('/create-admin', isLoggedIn, isAdmin, catchAsync(async (req, res) => {
+    try {
+        const { username, email, password, phone } = req.body;
+        
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            req.flash('error', 'A user with that email already exists');
+            return res.redirect('/admin/create-admin');
+        }
+
+        // Check if username already exists
+        const existingUsername = await User.findOne({ username });
+        if (existingUsername) {
+            req.flash('error', 'Username is already taken');
+            return res.redirect('/admin/create-admin');
+        }
+
+        // Create new admin user
+        const user = new User({ 
+            username, 
+            email, 
+            phone, 
+            role: 'admin',
+            isVerified: true,  // Admin users are automatically verified
+            hasPassword: true  // Indicate that user has a password set
+        });
+        
+        const registeredUser = await User.register(user, password);
+        req.flash('success', 'Successfully created new admin user');
+        res.redirect('/admin/dashboard');
+    } catch (e) {
+        console.error('Error creating admin:', e);
+        req.flash('error', e.message);
+        res.redirect('/admin/create-admin');
+    }
+}));
+
 module.exports = router; 
