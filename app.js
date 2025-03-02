@@ -8,6 +8,7 @@ const ejsMate = require("ejs-mate");
 const methodOverride = require("method-override");
 const session = require("express-session");
 const mongoose = require("mongoose");
+const MongoStore = require('connect-mongo');
 const flash = require("connect-flash");
 const passport = require("passport");
 const localStrategy = require("passport-local");
@@ -86,13 +87,21 @@ const sessionConfig = {
     secret: process.env.SESSION_SECRET,
     name: 'session',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        touchAfter: 24 * 3600,
+        crypto: {
+            secret: process.env.SESSION_SECRET
+        }
+    }),
     cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Only use secure in production
+        // In production, only use secure cookies if HTTPS is available
+        secure: false, // Temporarily disable secure requirement
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
         maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+        sameSite: 'lax' // More permissive SameSite policy
     }
 };
 
