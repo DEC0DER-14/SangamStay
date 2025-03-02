@@ -127,34 +127,33 @@ app.use(passport.session());
 
 // Custom Local Strategy to handle both username and email
 passport.use(new localStrategy({
-    usernameField: 'username', // this is the name of the form field
+    usernameField: 'email',
     passwordField: 'password'
-}, async (username, password, done) => {
+}, async (email, password, done) => {
     try {
-        // Try to find user by username or email
-        const user = await User.findOne({
-            $or: [
-                { username: username },
-                { email: username }
-            ]
-        });
+        // Find user by email only
+        const user = await User.findOne({ email });
         
         if (!user) {
-            return done(null, false, { message: 'Incorrect username/email or password' });
+            return done(null, false, { message: 'Invalid email or password' });
         }
 
-        // Use the passport-local-mongoose authenticate method
-        const isValid = await user.authenticate(password);
+        // Use the authenticate method properly
+        const { user: authenticatedUser } = await user.authenticate(password);
         
-        if (!isValid) {
-            return done(null, false, { message: 'Incorrect username/email or password' });
+        if (!authenticatedUser) {
+            return done(null, false, { message: 'Invalid email or password' });
         }
-
+        
         return done(null, user);
     } catch (err) {
         return done(err);
     }
 }));
+
+// Add serialization
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
     res.locals.currentUser = req.user;

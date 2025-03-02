@@ -48,8 +48,22 @@ const UserSchema = new Schema({
     }
 });
 
+// Configure passport-local-mongoose
 UserSchema.plugin(passportLocalMongoose, {
-    usernameField: 'email'
+    usernameField: 'email',
+    errorMessages: {
+        UserExistsError: 'A user with the given email is already registered',
+        IncorrectPasswordError: 'Password is incorrect',
+        IncorrectUsernameError: 'Email is not registered',
+        MissingPasswordError: 'No password was given',
+        MissingUsernameError: 'No email was given',
+        AttemptTooSoonError: 'Account is currently locked. Try again later',
+        TooManyAttemptsError: 'Account locked due to too many failed login attempts'
+    },
+    limitAttempts: true,
+    maxAttempts: 5,
+    unlockInterval: 2 * 60 * 60 * 1000, // 2 hours
+    selectFields: '+email +createdAt +role +isVerified +hasPassword'
 });
 
 module.exports = mongoose.model('User', UserSchema); 

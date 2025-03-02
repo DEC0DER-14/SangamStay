@@ -90,11 +90,16 @@ router.route('/login')
         }
         res.render('users/login');
     })
-    .post(passport.authenticate('local', { 
-        failureFlash: true, 
-        failureRedirect: '/login',
-        keepSessionInfo: true 
-    }), isVerified, users.login);
+    .post(
+        passport.authenticate('local', { 
+            failureFlash: true, 
+            failureRedirect: '/login',
+            keepSessionInfo: true,
+            failureMessage: 'Invalid username or password'
+        }), 
+        isVerified, 
+        users.login
+    );
 
 router.get('/logout', users.logout);
 

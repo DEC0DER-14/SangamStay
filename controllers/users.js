@@ -56,6 +56,24 @@ module.exports.renderLogin = (req, res) => {
 }
 
 module.exports.login = (req, res) => {
+    // Check if user exists and is authenticated
+    if (!req.user) {
+        req.flash('error', 'Invalid email or password');
+        return res.redirect('/login');
+    }
+
+    // Check if user is verified
+    if (!req.user.isVerified) {
+        req.logout((err) => {
+            if (err) {
+                console.error('Error during logout:', err);
+            }
+            req.flash('error', 'Please verify your email before logging in');
+            return res.redirect('/login');
+        });
+        return;
+    }
+
     req.flash('success', 'Welcome back!');
     
     // Clear browser history and redirect
