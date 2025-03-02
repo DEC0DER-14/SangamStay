@@ -5,23 +5,32 @@
             <div class="card shadow">
                 <div class="card-body">
                     <h2 class="card-title text-center mb-4">Register</h2>
-                    <form action="/register" method="POST" class="validated-form" novalidate>
+                    <form action="/register" method="POST" class="validated-form needs-validation" novalidate>
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username" required>
+                            <div class="invalid-feedback">
+                                Username is required
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid email address
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                                 <input type="password" class="form-control" id="password" name="password" required
                                        minlength="8" pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$">
                                 <button class="btn btn-outline-secondary position-absolute end-0 bg-transparent border-0" type="button" id="togglePassword" style="z-index: 10; margin: 5px;">
                                     <i class="fas fa-eye"></i>
                                 </button>
+                                <div class="invalid-feedback">
+                                    Password must meet all requirements
+                                </div>
                             </div>
                             <div class="form-text">
                                 Password must be at least 8 characters long and contain:
@@ -34,10 +43,13 @@
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                            <input type="tel" class="form-control" id="phone" name="phone" required pattern="[0-9]{10}">
+                            <div class="invalid-feedback">
+                                Please enter a valid 10-digit phone number
+                            </div>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-block">Register</button>
+                            <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Register</button>
                         </div>
                     </form>
                     <div class="mt-3 text-center">
@@ -50,12 +62,40 @@
 </div>
 
 <script>
-    const form = document.querySelector('form');
-    const submitButton = form.querySelector('button[type="submit"]');
+    const form = document.querySelector('.validated-form');
+    const submitButton = document.getElementById('submitBtn');
+    const inputs = form.querySelectorAll('input');
 
-    form.addEventListener('submit', () => {
-        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
-        submitButton.disabled = true;
+    // Function to validate form
+    function validateForm() {
+        let isValid = true;
+        inputs.forEach(input => {
+            if (!input.checkValidity()) {
+                isValid = false;
+            }
+        });
+        return isValid;
+    }
+
+    // Add validation on input
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            input.classList.add('was-validated');
+        });
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        form.classList.add('was-validated');
+        
+        if (validateForm()) {
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
+            submitButton.disabled = true;
+            form.submit();
+        } else {
+            submitButton.innerHTML = 'Register';
+            submitButton.disabled = false;
+        }
     });
 
     // Password visibility toggle
@@ -79,12 +119,29 @@
         const hasSpecial = /[@$!%*?&#]/.test(value);
         const isLongEnough = value.length >= 8;
 
-        this.setCustomValidity(
-            (!isLongEnough && 'Password must be at least 8 characters long.') ||
-            (!hasLetter && 'Password must contain at least one letter.') ||
-            (!hasNumber && 'Password must contain at least one number.') ||
-            (!hasSpecial && 'Password must contain at least one special character (@$!%*?&#).') ||
-            ''
-        );
+        let errorMessage = '';
+        if (!isLongEnough) errorMessage = 'Password must be at least 8 characters long.';
+        else if (!hasLetter) errorMessage = 'Password must contain at least one letter.';
+        else if (!hasNumber) errorMessage = 'Password must contain at least one number.';
+        else if (!hasSpecial) errorMessage = 'Password must contain at least one special character (@$!%*?&#).';
+
+        this.setCustomValidity(errorMessage);
+        
+        // Update the feedback message
+        const feedback = this.parentElement.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = errorMessage || 'Password meets all requirements';
+        }
+    });
+
+    // Phone number validation
+    const phone = document.querySelector('#phone');
+    phone.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        if (this.value.length !== 10) {
+            this.setCustomValidity('Phone number must be exactly 10 digits');
+        } else {
+            this.setCustomValidity('');
+        }
     });
 </script> 
