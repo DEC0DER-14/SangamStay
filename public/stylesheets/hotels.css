@@ -58,9 +58,6 @@ h1 {
 }
 
 .container.mt-5 {
-    background-image: url('/path/to/your/image.jpg');
-    background-size: cover;
-    background-position: center;
     padding: 20px;
     border-radius: 10px;
 } 
