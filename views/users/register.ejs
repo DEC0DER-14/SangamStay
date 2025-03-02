@@ -18,7 +18,7 @@
                             <label for="password" class="form-label">Password</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="password" name="password" required
-                                       minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}">
+                                       minlength="8" pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$">
                                 <button class="btn btn-outline-secondary position-absolute end-0 bg-transparent border-0" type="button" id="togglePassword" style="z-index: 10; margin: 5px;">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -26,9 +26,9 @@
                             <div class="form-text">
                                 Password must be at least 8 characters long and contain:
                                 <ul>
+                                    <li>At least one letter</li>
                                     <li>At least one number</li>
-                                    <li>At least one uppercase letter</li>
-                                    <li>At least one lowercase letter</li>
+                                    <li>At least one special character (@$!%*?&#)</li>
                                 </ul>
                             </div>
                         </div>
@@ -74,16 +74,16 @@
     // Password validation
     password.addEventListener('input', function() {
         const value = this.value;
+        const hasLetter = /[A-Za-z]/.test(value);
         const hasNumber = /\d/.test(value);
-        const hasUpper = /[A-Z]/.test(value);
-        const hasLower = /[a-z]/.test(value);
+        const hasSpecial = /[@$!%*?&#]/.test(value);
         const isLongEnough = value.length >= 8;
 
         this.setCustomValidity(
             (!isLongEnough && 'Password must be at least 8 characters long.') ||
+            (!hasLetter && 'Password must contain at least one letter.') ||
             (!hasNumber && 'Password must contain at least one number.') ||
-            (!hasUpper && 'Password must contain at least one uppercase letter.') ||
-            (!hasLower && 'Password must contain at least one lowercase letter.') ||
+            (!hasSpecial && 'Password must contain at least one special character (@$!%*?&#).') ||
             ''
         );
     });

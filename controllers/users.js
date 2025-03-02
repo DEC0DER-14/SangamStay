@@ -9,6 +9,10 @@ const { sendVerificationEmail } = require('../utils/email');
 const PendingUser = require('../models/pendingUser');
 const transporter = require('../utils/emailTransporter');
 
+// Add this constant at the top of the file after the imports
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+const PASSWORD_MESSAGE = 'Password must be at least 8 characters long and contain at least one letter, one number, and one special character (@$!%*?&#)';
+
 module.exports.renderRegister = (req, res) => {
     res.render('users/register');
 }
@@ -16,6 +20,12 @@ module.exports.renderRegister = (req, res) => {
 module.exports.register = async (req, res) => {
     try {
         const { email, username, password } = req.body;
+        
+        // Check password requirements
+        if (!PASSWORD_REGEX.test(password)) {
+            req.flash('error', PASSWORD_MESSAGE);
+            return res.redirect('/register');
+        }
         
         // Check if email already exists
         const existingUser = await User.findOne({ email });
@@ -281,11 +291,10 @@ module.exports.changePassword = async (req, res) => {
         const { oldPassword, newPassword, confirmPassword } = req.body;
         
         // Check if new password meets requirements
-        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-        if (!passwordRegex.test(newPassword)) {
+        if (!PASSWORD_REGEX.test(newPassword)) {
             return res.status(400).json({
                 success: false,
-                message: 'Password must be at least 8 characters long and contain both letters and numbers'
+                message: PASSWORD_MESSAGE
             });
         }
         
@@ -427,6 +436,12 @@ module.exports.resetPassword = async (req, res) => {
         const { token } = req.params;
         const { password, confirmPassword } = req.body;
 
+        // Check password requirements
+        if (!PASSWORD_REGEX.test(password)) {
+            req.flash('error', PASSWORD_MESSAGE);
+            return res.redirect(`/reset-password/${token}`);
+        }
+
         if (password !== confirmPassword) {
             req.flash('error', 'Passwords do not match');
             return res.redirect(`/reset-password/${token}`);
@@ -454,4 +469,54 @@ module.exports.resetPassword = async (req, res) => {
         req.flash('error', 'Error resetting password');
         res.redirect('/forgot-password');
     }
+};
+
+module.exports.setPassword = async (req, res) => {
+    try {
+        const { newPassword, confirmPassword } = req.body;
+
+        // Check password requirements
+        if (!PASSWORD_REGEX.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: PASSWORD_MESSAGE
+            });
+        }
+
+        // Check if passwords match
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Passwords don't match"
+            });
+        }
+
+        const user = await User.findById(req.user._id);
+        
+        // Set the password using passport-local-mongoose
+        await user.setPassword(newPassword);
+        
+        // Update hasPassword flag for Google users
+        user.hasPassword = true;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Password set successfully! You can now use email/password login.',
+            redirect: '/profile'
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Error setting password. Please try again.'
+        });
+    }
+};
+
+module.exports.renderSetPassword = (req, res) => {
+    if (!req.user.googleId || req.user.hasPassword) {
+        req.flash('error', 'You are not allowed to access this page');
+        return res.redirect('/profile');
+    }
+    res.render('users/set-password');
 }; 

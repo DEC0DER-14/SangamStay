@@ -56,28 +56,10 @@ router.get('/auth/google/callback',
     }
 );
 
-// Add route for setting password after Google login
+// Set Password Routes
 router.route('/set-password')
-    .get(isLoggedIn, (req, res) => {
-        if (req.user.hasPassword) {
-            req.flash('error', 'You already have a password set');
-            return res.redirect('/profile');
-        }
-        res.render('users/set-password');
-    })
-    .post(isLoggedIn, catchAsync(async (req, res) => {
-        if (req.user.hasPassword) {
-            req.flash('error', 'You already have a password set');
-            return res.redirect('/profile');
-        }
-        const { password } = req.body;
-        const user = await User.findById(req.user._id);
-        await user.setPassword(password);
-        user.hasPassword = true;
-        await user.save();
-        req.flash('success', 'Password set successfully');
-        res.redirect('/profile');
-    }));
+    .get(isLoggedIn, users.renderSetPassword)
+    .post(isLoggedIn, catchAsync(users.setPassword));
 
 router.route('/register')
     .get(users.renderRegister)
