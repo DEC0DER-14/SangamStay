@@ -6,8 +6,8 @@ const mongoose = require('mongoose');
 const User = require('./models/user');
 
 const adminData = {
-    username: 'arnav',
-    email: 'pandeyarnav19@gmail.com',
+    username: 'user123',
+    email: 'abc@gmail.com',
     role: 'admin',
     isVerified: true
 };
